@@ -1,0 +1,315 @@
+.page {
+  max-width: 1060px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Header ──────────────────────────────────────────── */
+.posHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.4rem;
+  background: #0c4a6e;
+  border-radius: 8px;
+  color: #fff;
+}
+
+.posSymbol {
+  font-size: 1rem;
+  color: #5eead4;
+  flex-shrink: 0;
+  font-weight: 700;
+}
+
+.posTitle {
+  margin: 0;
+  flex: 1;
+  font-size: 0.96rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  font-family: 'Courier New', Courier, monospace;
+  color: #f0fdfa;
+}
+
+.posDate {
+  font-size: 0.78rem;
+  color: #7dd3e8;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  .posTitle { font-size: 0.72rem; letter-spacing: 0.04em; }
+  .posDate  { display: none; }
+}
+
+/* ── Stats ───────────────────────────────────────────── */
+.statsRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.65rem;
+}
+
+@media (max-width: 860px) { .statsRow { grid-template-columns: repeat(2, 1fr); } }
+
+.statCard {
+  padding: 0.8rem 1rem;
+  border-radius: 7px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-left: 4px solid #cbd5e1;
+}
+
+.card_up      { border-left-color: #16a34a; }
+.card_warn    { border-left-color: #d97706; }
+.card_neutral { border-left-color: #94a3b8; }
+
+.statLabel {
+  margin: 0 0 0.2rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+}
+
+.statValue {
+  margin: 0 0 0.18rem;
+  font-size: 1.22rem;
+  font-weight: 700;
+  color: #0f172a;
+  line-height: 1.1;
+}
+
+.statDelta {
+  margin: 0;
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
+.delta_up   { color: #16a34a; }
+.delta_warn { color: #d97706; }
+
+/* ── Menu Grid ───────────────────────────────────────── */
+.menuGrid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.7rem;
+}
+
+@media (max-width: 860px) { .menuGrid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 520px) { .menuGrid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ── Tile ────────────────────────────────────────────── */
+.menuTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 1rem 0.5rem 0.85rem;
+  border-radius: 9px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  color: #1e293b;
+  min-height: 105px;
+  transition: border-color 0.13s, box-shadow 0.13s;
+}
+
+.menuTile:hover {
+  border-color: #94a3b8;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.07);
+}
+
+.tileActive {
+  color: #fff;
+  border-color: transparent !important;
+}
+
+.exitTile {
+  background: #f8fafc;
+  color: #64748b;
+}
+.exitTile:hover { border-color: #94a3b8; }
+
+.tileIcon {
+  width: 46px;
+  height: 46px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.55rem;
+  flex-shrink: 0;
+}
+
+.tileLabel {
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* ── Backdrop ────────────────────────────────────────── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 30, 50, 0.45);
+  z-index: 50;
+  border: none;
+  cursor: pointer;
+  backdrop-filter: blur(2px);
+}
+
+/* ── Modal ───────────────────────────────────────────── */
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 51;
+  width: min(420px, calc(100vw - 2rem));
+  background: #fff;
+  border-radius: 12px;
+  border-top: 4px solid #0e7490;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22), 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  animation: popIn 0.18s ease;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: translate(-50%, -47%) scale(0.96); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ── Modal Header ────────────────────────────────────── */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem;
+  background: #f8fafc;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.modalHeadIcon { font-size: 1.25rem; }
+
+.modalTitle {
+  margin: 0;
+  flex: 1;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.closeBtn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s, color 0.12s;
+  flex-shrink: 0;
+}
+.closeBtn:hover { background: #fee2e2; border-color: #fca5a5; color: #b91c1c; }
+
+.backBtn {
+  padding: 0.25rem 0.6rem;
+  border-radius: 5px;
+  border: 1px solid #e2e8f0;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.12s, color 0.12s;
+}
+.backBtn:hover { background: #f0fdfa; border-color: #5eead4; color: #0d9488; }
+
+/* ── Modal Item Grid ─────────────────────────────────── */
+.modalGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  padding: 0.85rem;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* ── Modal Item ──────────────────────────────────────── */
+.modalItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 1rem 0.5rem 0.85rem;
+  border-radius: 9px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.13s, background 0.13s, box-shadow 0.13s;
+  min-height: 90px;
+}
+
+.modalItem:hover {
+  border-color: #94a3b8;
+  background: #f8fafc;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.modalItemStar {
+  border-color: #fde68a;
+  background: #fffbeb;
+}
+.modalItemStar:hover {
+  border-color: #f59e0b;
+  background: #fef3c7;
+}
+
+.modalItemDrill:hover {
+  background: #f0fdfa;
+  border-color: #99f6e4;
+}
+
+.itemStarDot {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.5rem;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+
+.itemIcon {
+  font-size: 1.65rem;
+  line-height: 1;
+}
+
+.itemLabel {
+  font-size: 0.76rem;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.35;
+  color: #334155;
+}
+
+.itemChev {
+  position: absolute;
+  bottom: 0.4rem;
+  right: 0.55rem;
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0.6;
+}

@@ -1,0 +1,343 @@
+.page {
+  min-height: 100svh;
+  background: var(--surface-0);
+  color: var(--text);
+  position: relative;
+  overflow-x: hidden;
+}
+
+.bgOrbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 80% 50% at 85% -10%, rgba(45, 212, 191, 0.22), transparent),
+    radial-gradient(ellipse 60% 40% at 0% 100%, rgba(14, 165, 233, 0.12), transparent);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 4vw;
+  position: relative;
+  z-index: 2;
+}
+
+.logoRow {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.logoMark {
+  width: 40px;
+  height: 40px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #2dd4bf, #0ea5e9);
+  box-shadow: 0 8px 28px rgba(14, 165, 233, 0.28);
+}
+
+.logoText {
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+}
+
+.headerCta {
+  padding: 0.55rem 1.15rem;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-decoration: none;
+  color: var(--medical-deep);
+  background: linear-gradient(135deg, #ccfbf1, #e0f2fe);
+  border: 1px solid rgba(45, 212, 191, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.headerCta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(14, 165, 233, 0.2);
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2.5rem;
+  align-items: center;
+  padding: 2rem 4vw 4rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: 1fr;
+    padding-bottom: 3rem;
+  }
+}
+
+.heroCopy {
+  max-width: 34rem;
+}
+
+.eyebrow {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--medical-teal);
+  margin: 0 0 1rem;
+}
+
+.title {
+  font-size: clamp(2.1rem, 4.5vw, 3.15rem);
+  line-height: 1.08;
+  letter-spacing: -0.035em;
+  color: var(--text-strong);
+  margin: 0 0 1.1rem;
+  font-weight: 700;
+}
+
+.titleAccent {
+  background: linear-gradient(120deg, #0d9488, #0284c7);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.lead {
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 0 0 1.75rem;
+}
+
+.ctaRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.75rem;
+}
+
+.primaryBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.85rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-decoration: none;
+  color: #fff;
+  background: linear-gradient(135deg, #0f766e 0%, #0e7490 45%, #0369a1 100%);
+  box-shadow: 0 12px 32px rgba(15, 118, 110, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.primaryBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(14, 116, 144, 0.4);
+}
+
+.ghostBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.85rem 1.35rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  text-decoration: none;
+  color: var(--medical-deep);
+  border: 1px solid var(--border);
+  background: var(--surface-1);
+}
+
+.trust {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem 1.25rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.trust li {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.trust li::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+
+.heroCard {
+  position: relative;
+  border-radius: 20px;
+  padding: 1.75rem;
+  background: linear-gradient(145deg, #ffffff 0%, #f0fdfa 100%);
+  border: 1px solid rgba(45, 212, 191, 0.25);
+  box-shadow: 0 24px 60px rgba(8, 61, 74, 0.12);
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+.cardGlow {
+  position: absolute;
+  inset: -1px;
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.15), rgba(14, 165, 233, 0.1));
+  z-index: -1;
+  filter: blur(12px);
+  opacity: 0.9;
+}
+
+.mockUi {
+  background: #fff;
+  border-radius: 14px;
+  padding: 1rem;
+  border: 1px solid var(--border);
+}
+
+.mockBar {
+  height: 8px;
+  width: 45%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #0d9488, #22d3ee);
+  margin-bottom: 1rem;
+}
+
+.mockRows {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.mockRows span {
+  height: 6px;
+  border-radius: 3px;
+  background: #e2e8f0;
+}
+
+.mockRows span:nth-child(1) {
+  width: 100%;
+}
+.mockRows span:nth-child(2) {
+  width: 88%;
+}
+.mockRows span:nth-child(3) {
+  width: 72%;
+}
+
+.mockChart {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.65rem;
+  height: 100px;
+  padding-top: 0.5rem;
+}
+
+.mockBar1,
+.mockBar2,
+.mockBar3 {
+  flex: 1;
+  border-radius: 6px 6px 2px 2px;
+  background: linear-gradient(180deg, #2dd4bf, #0d9488);
+  opacity: 0.85;
+}
+
+.mockBar1 {
+  height: 45%;
+}
+.mockBar2 {
+  height: 78%;
+}
+.mockBar3 {
+  height: 62%;
+}
+
+.cardCaption {
+  margin: 1rem 0 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--medical-deep);
+  text-align: center;
+}
+
+.features {
+  padding: 3rem 4vw 4rem;
+  max-width: 1100px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.sectionTitle {
+  font-size: 1.5rem;
+  text-align: center;
+  margin: 0 0 2rem;
+  color: var(--text-strong);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.featureCard {
+  padding: 1.5rem;
+  border-radius: 16px;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.featureCard:hover {
+  border-color: rgba(45, 212, 191, 0.4);
+  box-shadow: 0 12px 32px rgba(8, 61, 74, 0.08);
+}
+
+.featureCard h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.05rem;
+  color: var(--text-strong);
+}
+
+.featureCard p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.footer {
+  padding: 1.5rem 4vw 2rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  border-top: 1px solid var(--border);
+}
+
+.footerDot {
+  margin: 0 0.5rem;
+  opacity: 0.5;
+}

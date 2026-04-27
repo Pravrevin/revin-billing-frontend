@@ -1,0 +1,1282 @@
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+}
+
+.titleBlock h1 {
+  margin: 0 0 0.35rem;
+  font-size: 1.65rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
+}
+
+.titleBlock p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  max-width: 36rem;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.btnPrimary,
+.btnGhost,
+.btnMuted,
+.btnDanger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.65rem 1.1rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s ease;
+}
+
+.btnPrimary {
+  color: #fff;
+  background: var(--medical-mid);
+  box-shadow: 0 2px 8px rgba(12, 74, 110, 0.2);
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--medical-deep);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(12, 74, 110, 0.22);
+}
+
+.btnGhost {
+  background: var(--surface-1);
+  color: var(--medical-deep);
+  border: 1px solid var(--border);
+}
+
+.btnGhost:hover:not(:disabled) {
+  border-color: rgba(45, 212, 191, 0.45);
+}
+
+.btnMuted {
+  background: rgba(14, 165, 233, 0.1);
+  color: var(--medical-deep);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+}
+
+.btnDanger {
+  background: #fef2f2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.btnPrimary:disabled,
+.btnGhost:disabled,
+.btnMuted:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.filterCard {
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.15rem 1.25rem 1.25rem;
+  margin-bottom: 1.15rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+/* —— Product Master: highlighted search —— */
+.pmFilterCard {
+  position: relative;
+}
+
+.pmFilterCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 1.25rem;
+  right: 1.25rem;
+  height: 3px;
+  border-radius: 0 0 4px 4px;
+  background: var(--medical-deep);
+  pointer-events: none;
+}
+
+.pmSearchField {
+  grid-column: span 2;
+  align-self: stretch;
+  margin-bottom: 0.15rem;
+  padding: 1rem 1.1rem 1.1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.pmSearchField label.pmSearchLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.48rem;
+  font-size: 0.86rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--medical-deep);
+  line-height: 1.2;
+}
+
+.pmSearchLabel::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--medical-teal);
+  flex-shrink: 0;
+}
+
+.pmSearchInput {
+  border-width: 1px;
+  border-color: var(--border-strong);
+  padding: 0.72rem 1rem;
+  font-size: 0.96rem;
+  font-weight: 500;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pmSearchInput:hover {
+  border-color: var(--medical-mid);
+}
+
+.pmSearchInput:focus {
+  outline: none;
+  border-color: var(--medical-mid);
+  box-shadow: 0 0 0 2px rgba(14, 116, 144, 0.2);
+}
+
+.pmSearchInput::placeholder {
+  color: var(--text-muted);
+  opacity: 0.55;
+  font-weight: 400;
+}
+
+@media (max-width: 1100px) {
+  .pmSearchField {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 640px) {
+  .pmSearchField {
+    grid-column: span 1;
+  }
+}
+
+.filterGrid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.75rem 1rem;
+  align-items: end;
+}
+
+@media (max-width: 1100px) {
+  .filterGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .filterGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.field label {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+
+/* Filter bar: label keys bold + clinical emphasis (Product & Stock master) */
+.filterCard .filterGrid .field > label {
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.085em;
+  text-transform: uppercase;
+  color: var(--medical-deep);
+  margin-bottom: 0.45rem;
+  line-height: 1.2;
+}
+
+.filterCard .filterGrid .pmSearchField > label.pmSearchLabel {
+  font-size: 0.86rem;
+  margin-bottom: 0.48rem;
+}
+
+.searchInput,
+.select,
+.pageSize {
+  width: 100%;
+  padding: 0.55rem 0.7rem;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  background: #fff;
+  color: var(--text);
+}
+
+.searchInput:focus,
+.select:focus,
+.pageSize:focus {
+  outline: none;
+  border-color: rgba(45, 212, 191, 0.65);
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.18);
+}
+
+.filterMeta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed rgba(45, 212, 191, 0.25);
+}
+
+.chip {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.chip strong {
+  color: var(--medical-deep);
+}
+
+.resetLink {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--medical-teal);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.tableWrap {
+  border-radius: 16px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background: var(--surface-1);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.06);
+}
+
+/* —— Product Master: table chrome —— */
+.pmTableWrap {
+  border: 1px solid var(--border-strong);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+.pmTable thead th {
+  text-align: left;
+  padding: 0.88rem 0.95rem;
+  background: var(--medical-deep);
+  color: #f8fafc;
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  border-bottom: 2px solid var(--medical-mid);
+  white-space: nowrap;
+}
+
+.pmTable thead tr:first-child th:first-child {
+  border-top-left-radius: 15px;
+}
+
+.pmTable thead tr:first-child th:last-child {
+  border-top-right-radius: 15px;
+}
+
+.pmTable tbody tr:first-child td {
+  border-top: 1px solid var(--border);
+}
+
+.tableScroll {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+}
+
+.table th {
+  text-align: left;
+  padding: 0.75rem 0.85rem;
+  background: #f1f5f9;
+  color: var(--text-muted);
+  font-weight: 700;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.table td {
+  padding: 0.72rem 0.85rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: var(--text);
+}
+
+.table tbody tr:hover {
+  background: #f8fffe;
+}
+
+/* Party master (distributor): same header style as ID / NAME — API key shown in capitals */
+.thApiKey {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  text-transform: uppercase;
+}
+
+.billsBackBtn {
+  margin-bottom: 0.25rem;
+}
+
+.billsMuted {
+  margin: 0 0 0.75rem;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+.billsInvoiceList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.billsInvoiceBtn {
+  width: 100%;
+  text-align: left;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+  cursor: pointer;
+  font-family: inherit;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.billsInvoiceBtn:hover {
+  border-color: rgba(14, 116, 144, 0.45);
+  background: #f0fdfa;
+}
+
+.billsInvoiceMain {
+  display: block;
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--medical-deep);
+}
+
+.billsInvoiceMeta {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.partyActionBtns {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nameCell {
+  max-width: 220px;
+}
+
+.nameMain {
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1.3;
+}
+
+.nameSub {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.badgeRx {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.badgeOtc {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.badgeH {
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.badgeOff {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.rowActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.linkBtn {
+  background: none;
+  border: none;
+  padding: 0.25rem 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--medical-teal);
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.linkBtn:hover {
+  text-decoration: underline;
+}
+
+.linkBtnWarn {
+  color: #b45309;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: #fafafa;
+  border-top: 1px solid var(--border);
+}
+
+.pageBtns {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pageBtns button {
+  min-width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pageBtns button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.pageBtns button:not(:disabled):hover {
+  border-color: rgba(45, 212, 191, 0.5);
+  color: var(--medical-deep);
+}
+
+.banner {
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  margin-bottom: 1rem;
+}
+
+.bannerError {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.bannerHint {
+  background: #ecfeff;
+  color: #155e75;
+  border: 1px solid #a5f3fc;
+}
+
+.loading {
+  padding: 3rem 1rem;
+  text-align: center;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  backdrop-filter: blur(4px);
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1.25rem 1rem;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.modal {
+  width: min(720px, 100%);
+  max-height: min(calc(100vh - 2.5rem), 900px);
+  margin: auto 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border);
+}
+
+.modalWide {
+  width: min(920px, 100%);
+}
+
+.modalForm {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.modalHead {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1.15rem 1.35rem;
+  border-bottom: 1px solid var(--border);
+  background: #f8fafc;
+  flex-shrink: 0;
+}
+
+.modalHeadMain {
+  min-width: 0;
+  flex: 1;
+}
+
+.headActions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btnPrimarySm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.95rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.82rem;
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+  color: #fff;
+  background: var(--medical-mid);
+  box-shadow: 0 1px 3px rgba(12, 74, 110, 0.2);
+  transition: transform 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btnPrimarySm:hover:not(:disabled) {
+  background: var(--medical-deep);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(12, 74, 110, 0.2);
+}
+
+.btnPrimarySm:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.modalHead h2 {
+  margin: 0 0 0.25rem;
+  font-size: 1.2rem;
+  color: var(--text-strong);
+}
+
+.modalHead p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.closeX {
+  border: none;
+  background: #f1f5f9;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--text-muted);
+}
+
+.closeX:hover {
+  background: #e2e8f0;
+}
+
+.modalBody {
+  padding: 1.1rem 1.35rem 1.35rem;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  min-height: 0;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.modalBody > section + section {
+  margin-top: 1.25rem;
+}
+
+.fieldLabel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.fieldLabelTitle {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: var(--text-strong);
+  line-height: 1.25;
+}
+
+.fieldLabelKey {
+  font-size: 0.68rem;
+  font-weight: 500;
+  font-family: ui-monospace, 'Cascadia Code', 'Consolas', monospace;
+  color: var(--text-muted);
+  opacity: 0.9;
+  letter-spacing: 0.01em;
+}
+
+.fieldHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  margin-bottom: 0.1rem;
+}
+
+.fieldHeader .fieldLabelTitle,
+.fieldHeader .fieldLabelKey {
+  cursor: default;
+}
+
+.keyRequired {
+  color: #b91c1c;
+  font-weight: 800;
+}
+
+.modalBody .searchInput::placeholder,
+.modalBody .formField input::placeholder,
+.modalBody .formField textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.45;
+}
+
+.modalBody .formField input,
+.modalBody .formField textarea {
+  color: var(--text-strong);
+}
+
+.detailSections {
+  display: flex;
+  flex-direction: column;
+  gap: 1.35rem;
+}
+
+/* Product view modal: each block is a clear “card” with title + nested fields */
+.detailSection {
+  margin: 0;
+  background: var(--surface-1);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--medical-teal);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  overflow: hidden;
+}
+
+.detailSectionTitle {
+  margin: 0;
+  padding: 0.85rem 1.15rem 0.65rem;
+  font-size: 0.98rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--medical-deep);
+  line-height: 1.25;
+  background: #f1f5f9;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.detailSectionTitle::before {
+  content: '';
+  width: 4px;
+  height: 1.1em;
+  border-radius: 2px;
+  background: var(--medical-mid);
+  flex-shrink: 0;
+}
+
+.detailSectionBody {
+  padding: 1rem 1.15rem 1.15rem;
+  background: var(--surface-1);
+  border-top: 1px solid var(--border);
+}
+
+.detailSectionBody .kvGrid {
+  gap: 0.75rem 1.35rem;
+}
+
+.sectionTitle {
+  margin: 0 0 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--medical-teal);
+}
+
+.kvGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem 1.25rem;
+}
+
+@media (max-width: 560px) {
+  .kvGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kv {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.kv span:first-child {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.kv span:last-child {
+  font-size: 0.88rem;
+  color: var(--text-strong);
+  word-break: break-word;
+}
+
+/* Sub-fields inside product view sections only */
+.detailSectionBody .kv {
+  gap: 0.2rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 10px;
+  background: rgba(248, 250, 252, 0.9);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.detailSectionBody .kv span:first-child {
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+}
+
+.detailSectionBody .kv span:last-child {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.detailSectionBody .kv:hover {
+  border-color: var(--medical-mid);
+  box-shadow: none;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem 1rem;
+}
+
+@media (max-width: 640px) {
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.formField label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.formField input,
+.formField select,
+.formField textarea {
+  padding: 0.55rem 0.65rem;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  font-size: 0.9rem;
+  font-family: inherit;
+}
+
+.inputReadonly {
+  background: #f1f5f9 !important;
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.formField textarea {
+  min-height: 72px;
+  resize: vertical;
+}
+
+.formFieldFull {
+  grid-column: 1 / -1;
+}
+
+.checkRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.checkRow input {
+  width: 1rem;
+  height: 1rem;
+}
+
+.modalFoot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.85rem 1.35rem;
+  border-top: 1px solid var(--border);
+  background: #fafafa;
+  flex-shrink: 0;
+}
+
+.hiddenFile {
+  position: absolute;
+  width: 0;
+  height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── Full-screen overlay (Bills / Invoice detail) ── */
+.overlayFullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.fsHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1.35rem;
+  background: var(--medical-deep);
+  color: #fff;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(12, 74, 110, 0.25);
+}
+
+.fsHeaderBack {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.84rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.12s ease;
+  flex-shrink: 0;
+}
+
+.fsHeaderBack:hover {
+  background: rgba(255,255,255,0.22);
+}
+
+.fsHeaderTitle {
+  flex: 1;
+  min-width: 0;
+}
+
+.fsHeaderTitle h2 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #fff;
+}
+
+.fsHeaderTitle p {
+  margin: 0.1rem 0 0;
+  font-size: 0.8rem;
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.fsCloseBtn {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 1.15rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fsCloseBtn:hover {
+  background: rgba(255,255,255,0.25);
+}
+
+.fsFilters {
+  background: #fff;
+  border-bottom: 1px solid var(--border);
+  padding: 0.85rem 1.35rem;
+  flex-shrink: 0;
+}
+
+.fsFilterRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 0.85rem;
+  align-items: flex-end;
+}
+
+.fsFilterField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 130px;
+}
+
+.fsFilterField label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--medical-deep);
+}
+
+.fsFilterField input,
+.fsFilterField select {
+  padding: 0.48rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  font-size: 0.88rem;
+  background: #fff;
+  color: var(--text);
+  font-family: inherit;
+}
+
+.fsFilterField input:focus,
+.fsFilterField select:focus {
+  outline: none;
+  border-color: rgba(14,116,144,0.55);
+  box-shadow: 0 0 0 2px rgba(14,116,144,0.14);
+}
+
+.fsFilterField.fsFilterGrow {
+  flex: 1 1 180px;
+}
+
+.fsFilterMeta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed rgba(45,212,191,0.25);
+}
+
+.fsBody {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1.1rem 1.35rem 1.35rem;
+  overscroll-behavior: contain;
+}
+
+.fsKvSection {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 4px rgba(15,23,42,0.05);
+}
+
+.fsKvSectionHead {
+  padding: 0.7rem 1.1rem;
+  background: var(--medical-deep);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.fsKvGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0;
+}
+
+.fsKv {
+  padding: 0.7rem 1rem;
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.fsKv:last-child {
+  border-right: none;
+}
+
+.fsKvLabel {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  margin-bottom: 0.2rem;
+}
+
+.fsKvValue {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-strong);
+  word-break: break-word;
+}
+
+.fsSectionTitle {
+  margin: 0 0 0.65rem;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--medical-teal);
+}
+
+.fsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.86rem;
+  background: #fff;
+}
+
+.fsTable thead th {
+  text-align: left;
+  padding: 0.75rem 0.9rem;
+  background: var(--medical-deep);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.065em;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--medical-mid);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.fsTable thead tr:first-child th:first-child { border-top-left-radius: 12px; }
+.fsTable thead tr:first-child th:last-child  { border-top-right-radius: 12px; }
+
+.fsTable tbody td {
+  padding: 0.68rem 0.9rem;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: var(--text);
+}
+
+.fsTable tbody tr:hover td {
+  background: #f0fdfa;
+}
+
+.fsTableWrap {
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  box-shadow: 0 1px 6px rgba(15,23,42,0.06);
+}
+
+.fsInvoiceRow {
+  cursor: pointer;
+}
+
+.fsInvoiceRow:hover td {
+  background: #f0fdfa !important;
+}
+
+.badgePaid {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.badgeUnpaid {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+.badgePartial {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.18rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #fff7ed;
+  color: #c2410c;
+}
+
+.amtCell {
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.emptyRow td {
+  text-align: center;
+  padding: 2.5rem;
+  color: var(--text-muted);
+}
+
+.toast {
+  position: fixed;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  z-index: 200;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  background: var(--text-strong);
+  color: #fff;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+  max-width: min(360px, calc(100vw - 2rem));
+}
