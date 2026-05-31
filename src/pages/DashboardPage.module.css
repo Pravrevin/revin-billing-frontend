@@ -5,6 +5,31 @@
   gap: 1.25rem;
 }
 
+/* ── Grouped menu sections ───────────────────────────── */
+.menuSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+.menuSectionHead {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #64748b;
+  padding-bottom: 0.35rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.sectionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.7rem;
+}
+@media (max-width: 520px) {
+  .sectionGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
 /* ── Header ──────────────────────────────────────────── */
 .posHeader {
   display: flex;

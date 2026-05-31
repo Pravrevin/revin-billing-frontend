@@ -6,6 +6,7 @@ import { fetchPackagingMasters } from '../../services/packagingMasterApi'
 import { fetchUnits } from '../../services/unitMasterApi'
 import type { BrandMaster } from '../../types/brandMaster'
 import type { CategoryMaster, SubCategoryMaster } from '../../types/categoryMaster'
+import type { ItemMaster } from '../../types/itemMaster'
 import type { PackagingMaster } from '../../types/packagingMaster'
 import type { UnitMaster } from '../../types/unitMaster'
 import styles from '../../pages/ProductMasterPage.module.css'
@@ -275,13 +276,19 @@ function FieldHeader({
 
 type Props = {
   onClose: () => void
-  onCreated: () => void
+  /** Receives the newly created item (callers that don't need it can ignore the arg). */
+  onCreated: (item?: ItemMaster) => void
+  /** Pre-fill the product name — used when creating directly from the purchase screen. */
+  initialName?: string
 }
 
-export function CreateItemMasterModal({ onClose, onCreated }: Props) {
-  const [form, setForm] = useState<FormState>(initialForm)
+export function CreateItemMasterModal({ onClose, onCreated, initialName }: Props) {
+  const [form, setForm] = useState<FormState>(() =>
+    initialName ? { ...initialForm, item_name: initialName } : initialForm,
+  )
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
+  const [savedMsg, setSavedMsg] = useState<string | null>(null)
   const [brands, setBrands] = useState<BrandMaster[]>([])
   const [units, setUnits] = useState<UnitMaster[]>([])
   const [categories, setCategories] = useState<CategoryMaster[]>([])
@@ -351,21 +358,31 @@ export function CreateItemMasterModal({ onClose, onCreated }: Props) {
     (value: FormState[K]) =>
       setForm((prev) => ({ ...prev, [key]: value }))
 
-  const submit = async (e: FormEvent) => {
-    e.preventDefault()
+  const save = async (keepOpen: boolean) => {
     setErr(null)
+    setSavedMsg(null)
     setSaving(true)
     try {
       const payload = buildPayload(form)
-      await createItemMaster(payload)
+      const savedName = String(payload.item_name)
+      const created = await createItemMaster(payload)
       setForm(initialForm)
-      onCreated()
-      onClose()
+      onCreated(created)
+      if (keepOpen) {
+        setSavedMsg(`“${savedName}” saved. Add another item below.`)
+      } else {
+        onClose()
+      }
     } catch (e) {
       setErr(e instanceof Error ? e.message : 'Create failed')
     } finally {
       setSaving(false)
     }
+  }
+
+  const submit = (e: FormEvent) => {
+    e.preventDefault()
+    void save(false)
   }
 
   const inp = (k: keyof FormState, placeholder: string) => (
@@ -411,6 +428,9 @@ export function CreateItemMasterModal({ onClose, onCreated }: Props) {
         <form className={styles.modalForm} onSubmit={submit}>
           <div className={styles.modalBody}>
             {err ? <div className={`${styles.banner} ${styles.bannerError}`}>{err}</div> : null}
+            {savedMsg ? (
+              <div className={`${styles.banner} ${styles.bannerSuccess}`}>{savedMsg}</div>
+            ) : null}
 
             <section>
               <h3 className={styles.sectionTitle}>Basics</h3>
@@ -839,6 +859,14 @@ export function CreateItemMasterModal({ onClose, onCreated }: Props) {
           <div className={styles.modalFoot}>
             <button type="button" className={styles.btnGhost} onClick={onClose} disabled={saving}>
               Cancel
+            </button>
+            <button
+              type="button"
+              className={styles.btnGhost}
+              onClick={() => void save(true)}
+              disabled={saving}
+            >
+              {saving ? 'Saving…' : 'Save & Add Another'}
             </button>
             <button type="submit" className={styles.btnPrimary} disabled={saving}>
               {saving ? 'Saving…' : 'Add Item'}

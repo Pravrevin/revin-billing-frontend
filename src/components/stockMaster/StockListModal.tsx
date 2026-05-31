@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { fetchItemMasters } from '../../services/itemMasterApi'
-import type { ItemMaster } from '../../types/itemMaster'
+import { fetchStockMasters } from '../../services/stockMasterApi'
+import type { StockMaster } from '../../types/stockMaster'
 import styles from '../../pages/ProductMasterPage.module.css'
 
 type Props = { onClose: () => void }
@@ -10,95 +10,58 @@ function fmt(value: unknown): string {
   return String(value).trim() || '—'
 }
 
-function boolLabel(value: unknown): string {
-  if (value === true) return 'Yes'
-  if (value === false) return 'No'
-  return '—'
+function fmtDate(v: unknown): string {
+  if (!v) return '—'
+  return String(v).slice(0, 10)
 }
 
-function getAny(item: ItemMaster, key: string): unknown {
-  return (item as unknown as Record<string, unknown>)[key]
+function daysUntil(dateStr: string | null | undefined): number {
+  if (!dateStr) return Infinity
+  const t = new Date(String(dateStr).slice(0, 10)).getTime()
+  if (Number.isNaN(t)) return Infinity
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  return Math.ceil((t - now.getTime()) / 86400000)
 }
 
-function ItemDetail({ item, onClose }: { item: ItemMaster; onClose: () => void }) {
-  const isActive = item.is_active === true
+// ── Side detail panel (same visual language as the Item List detail) ──────────
 
+function StockDetail({ row, onClose }: { row: StockMaster; onClose: () => void }) {
   const sections: { title: string; fields: { label: string; value: string }[] }[] = [
     {
-      title: 'Basic Info',
+      title: 'Batch',
       fields: [
-        { label: 'ID', value: fmt(item.id) },
-        { label: 'Item Code', value: fmt(item.item_code) },
-        { label: 'Item Name', value: fmt(item.item_name) },
-        { label: 'Generic Name', value: fmt(item.generic_name) },
-        { label: 'Brand Name', value: fmt(item.brand_name) },
-        { label: 'Composition', value: fmt(item.composition) },
-        { label: 'Strength', value: fmt(item.strength) },
-        { label: 'Dosage Form', value: fmt(item.dosage_form) },
-        { label: 'Category', value: fmt(getAny(item, 'category_name')) },
-        { label: 'Sub Category', value: fmt(getAny(item, 'sub_category_name')) },
-        { label: 'Status', value: isActive ? 'Active' : 'Inactive' },
+        { label: 'Stock ID', value: fmt(row.id) },
+        { label: 'Product', value: fmt(row.item_name) },
+        { label: 'Item ID', value: fmt(row.item_id) },
+        { label: 'Batch No', value: fmt(row.batch_no) },
+        { label: 'Manufacture Date', value: fmtDate(row.manufacture_date) },
+        { label: 'Expiry Date', value: fmtDate(row.expiry_date) },
       ],
     },
     {
-      title: 'Packing & Units',
+      title: 'Rates & Quantity',
       fields: [
-        { label: 'Packing Type', value: fmt(item.packing_type) },
-        { label: 'Pack Size', value: fmt(item.pack_size) },
-        { label: 'Conversion Factor', value: fmt(item.conversion_factor) },
-        { label: 'Unit Primary', value: fmt(item.unit_primary) },
-        { label: 'Unit Secondary', value: fmt(item.unit_secondary) },
+        { label: 'MRP', value: fmt(row.mrp) },
+        { label: 'Purchase Rate', value: fmt(row.purchase_rate) },
+        { label: 'Sale Rate', value: fmt(row.sale_rate) },
+        { label: 'Quantity', value: fmt(row.quantity) },
+        { label: 'Free Quantity', value: fmt(row.free_quantity) },
       ],
     },
     {
-      title: 'Tax & Pricing',
+      title: 'Location',
       fields: [
-        { label: 'GST %', value: fmt(item.gst_percent) },
-        { label: 'CGST %', value: fmt(item.cgst) },
-        { label: 'SGST %', value: fmt(item.sgst) },
-        { label: 'IGST %', value: fmt(item.igst) },
-        { label: 'Cess %', value: fmt(item.cess_percent) },
-        { label: 'HSN Code', value: fmt(item.hsn_code) },
-        { label: 'Tax Type', value: fmt(item.tax_type) },
-        { label: 'Min Discount', value: fmt(item.min_discount) },
-        { label: 'Max Discount', value: fmt(item.max_discount) },
-        { label: 'Discount Allowed', value: boolLabel(item.is_discount_allowed) },
-        { label: 'Pricing Type', value: fmt(item.pricing_type) },
+        { label: 'Warehouse', value: fmt(row.warehouse_id) },
+        { label: 'Rack', value: fmt(row.rack_location) },
       ],
     },
     {
-      title: 'Stock & Shelf',
+      title: 'System',
       fields: [
-        { label: 'Min Stock Level', value: fmt(item.min_stock_level) },
-        { label: 'Max Stock Level', value: fmt(item.max_stock_level) },
-        { label: 'Reorder Level', value: fmt(item.reorder_level) },
-        { label: 'Batch Required', value: boolLabel(item.is_batch_required) },
-        { label: 'Expiry Required', value: boolLabel(item.is_expiry_required) },
-        { label: 'Shelf Life (Days)', value: fmt(item.shelf_life_days) },
-        { label: 'Lead Time (Days)', value: fmt(item.lead_time_days) },
-      ],
-    },
-    {
-      title: 'Regulatory',
-      fields: [
-        { label: 'Schedule Type', value: fmt(item.schedule_type) },
-        { label: 'Narcotic', value: boolLabel(item.is_narcotic) },
-        { label: 'Psychotropic', value: boolLabel(item.is_psychotropic) },
-        { label: 'Prescription Required', value: boolLabel(item.prescription_required) },
-        { label: 'Drug License Required', value: boolLabel(item.drug_license_required) },
-        { label: 'Regulatory Category', value: fmt(item.regulatory_category) },
-      ],
-    },
-    {
-      title: 'Codes & System',
-      fields: [
-        { label: 'Barcode', value: fmt(item.barcode) },
-        { label: 'QR Code', value: fmt(item.qr_code) },
-        { label: 'SKU Code', value: fmt(item.sku_code) },
-        { label: 'External Code', value: fmt(item.external_code) },
-        { label: 'Extra Data', value: fmt(item.extra_data) },
-        { label: 'Created At', value: fmt(item.created_at) },
-        { label: 'Updated At', value: fmt(item.updated_at) },
+        { label: 'Extra Data', value: row.extra_data != null ? JSON.stringify(row.extra_data) : '—' },
+        { label: 'Created At', value: fmtDate(row.created_at) },
+        { label: 'Updated At', value: fmtDate(row.updated_at) },
       ],
     },
   ]
@@ -138,10 +101,10 @@ function ItemDetail({ item, onClose }: { item: ItemMaster; onClose: () => void }
               whiteSpace: 'nowrap',
             }}
           >
-            {fmt(item.item_name)}
+            {fmt(row.item_name) !== '—' ? fmt(row.item_name) : `Item #${row.item_id}`}
           </div>
           <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '0.1rem' }}>
-            ID {item.id} · {fmt(item.item_code)}
+            Stock {row.id} · Batch {fmt(row.batch_no)}
           </div>
         </div>
         <button
@@ -165,15 +128,6 @@ function ItemDetail({ item, onClose }: { item: ItemMaster; onClose: () => void }
         >
           ×
         </button>
-      </div>
-
-      <div style={{ padding: '0.75rem 1rem 0' }}>
-        <span
-          className={`${styles.badge} ${isActive ? styles.badgeOtc : styles.badgeOff}`}
-          style={{ fontSize: '0.72rem' }}
-        >
-          {isActive ? 'Active' : 'Inactive'}
-        </span>
       </div>
 
       <div style={{ padding: '0.75rem 1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
@@ -225,21 +179,23 @@ function ItemDetail({ item, onClose }: { item: ItemMaster; onClose: () => void }
   )
 }
 
-export function ItemMasterListModal({ onClose }: Props) {
-  const [rows, setRows] = useState<ItemMaster[]>([])
+// ── Stock List modal (full-screen overlay — same UI as New Purchase / Item List) ─
+
+export function StockListModal({ onClose }: Props) {
+  const [rows, setRows] = useState<StockMaster[]>([])
   const [loading, setLoading] = useState(true)
   const [err, setErr] = useState<string | null>(null)
   const [search, setSearch] = useState('')
-  const [selected, setSelected] = useState<ItemMaster | null>(null)
+  const [selected, setSelected] = useState<StockMaster | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
     setErr(null)
     try {
-      const data = await fetchItemMasters()
+      const data = await fetchStockMasters()
       setRows(data)
     } catch (e) {
-      setErr(e instanceof Error ? e.message : 'Could not load items')
+      setErr(e instanceof Error ? e.message : 'Could not load stock')
     } finally {
       setLoading(false)
     }
@@ -277,13 +233,12 @@ export function ItemMasterListModal({ onClose }: Props) {
     return rows.filter((row) => {
       const hay = [
         row.item_name,
-        row.item_code,
-        row.generic_name,
-        row.brand_name,
-        row.packing_type,
-        row.hsn_code,
-        row.sku_code,
-        row.barcode,
+        row.batch_no,
+        row.rack_location,
+        String(row.item_id),
+        String(row.id),
+        row.mrp,
+        row.sale_rate,
       ]
         .filter((v) => v != null && String(v).trim() !== '')
         .join(' ')
@@ -295,7 +250,7 @@ export function ItemMasterListModal({ onClose }: Props) {
   if (loading) {
     return (
       <div className={styles.overlayFullscreen} style={{ alignItems: 'center', justifyContent: 'center' }}>
-        <div className={styles.loading}>Loading items…</div>
+        <div className={styles.loading}>Loading stock…</div>
       </div>
     )
   }
@@ -326,8 +281,8 @@ export function ItemMasterListModal({ onClose }: Props) {
           ← Back
         </button>
         <div className={styles.fsHeaderTitle}>
-          <h2>Item List</h2>
-          <p>{filtered.length} of {rows.length} items · click item name to view details</p>
+          <h2>Stock List</h2>
+          <p>{filtered.length} of {rows.length} batches · click a row to view full details</p>
         </div>
         <button type="button" className={styles.fsCloseBtn} onClick={onClose} aria-label="Close">
           ×
@@ -337,11 +292,11 @@ export function ItemMasterListModal({ onClose }: Props) {
       <div className={styles.fsFilters}>
         <div className={styles.fsFilterRow}>
           <div className={`${styles.fsFilterField} ${styles.fsFilterGrow}`}>
-            <label htmlFor="item-list-search">Search</label>
+            <label htmlFor="stock-list-search">Search</label>
             <input
-              id="item-list-search"
+              id="stock-list-search"
               type="text"
-              placeholder="Name, code, generic, brand, HSN, packing…"
+              placeholder="Item name, batch no, rack, stock ID…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               autoComplete="off"
@@ -351,7 +306,7 @@ export function ItemMasterListModal({ onClose }: Props) {
         </div>
         <div className={styles.fsFilterMeta}>
           <span className={styles.chip}>
-            Showing <strong>{filtered.length}</strong> of <strong>{rows.length}</strong> items
+            Showing <strong>{filtered.length}</strong> of <strong>{rows.length}</strong> batches
           </span>
           {search ? (
             <button type="button" className={styles.resetLink} onClick={() => setSearch('')}>
@@ -368,23 +323,24 @@ export function ItemMasterListModal({ onClose }: Props) {
               <table className={styles.fsTable}>
                 <thead>
                   <tr>
-                    <th>Item Name</th>
-                    <th>Generic Name</th>
-                    <th>Brand Name</th>
-                    <th>Packing Type</th>
-                    <th>Strength</th>
-                    <th>HSN Code</th>
-                    <th>Status</th>
+                    <th>Item / Product</th>
+                    <th>Batch No</th>
+                    <th>Expiry</th>
+                    <th>MRP</th>
+                    <th>Sale Rate</th>
+                    <th>Qty</th>
+                    <th>Warehouse</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
                     <tr className={styles.emptyRow}>
-                      <td colSpan={7}>No items found.</td>
+                      <td colSpan={7}>No stock found.</td>
                     </tr>
                   ) : (
                     filtered.map((row) => {
                       const isSelected = selected?.id === row.id
+                      const d = daysUntil(row.expiry_date)
                       return (
                         <tr
                           key={row.id}
@@ -402,22 +358,33 @@ export function ItemMasterListModal({ onClose }: Props) {
                                 fontSize: '0.88rem',
                               }}
                             >
-                              {fmt(row.item_name)}
+                              {fmt(row.item_name) !== '—' ? fmt(row.item_name) : `Item #${row.item_id}`}
                             </span>
                             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                              {fmt(row.item_code)}
+                              Item ID {row.item_id}
                             </div>
                           </td>
-                          <td style={{ fontSize: '0.85rem' }}>{fmt(row.generic_name)}</td>
-                          <td style={{ fontSize: '0.85rem' }}>{fmt(row.brand_name)}</td>
-                          <td style={{ fontSize: '0.85rem' }}>{fmt(row.packing_type)}</td>
-                          <td style={{ fontSize: '0.85rem' }}>{fmt(row.strength)}</td>
-                          <td style={{ fontSize: '0.85rem' }}>{fmt(row.hsn_code)}</td>
-                          <td>
-                            <span className={`${styles.badge} ${row.is_active ? styles.badgeOtc : styles.badgeOff}`}>
-                              {row.is_active ? 'Active' : 'Inactive'}
-                            </span>
+                          <td style={{ fontSize: '0.85rem' }}>{fmt(row.batch_no)}</td>
+                          <td style={{ fontSize: '0.85rem' }}>
+                            {fmtDate(row.expiry_date)}
+                            {d <= 90 && d >= 0 ? (
+                              <div style={{ fontSize: '0.74rem', color: '#c2410c' }}>{d}d left</div>
+                            ) : null}
+                            {d < 0 ? (
+                              <span className={`${styles.badge} ${styles.badgeOff}`} style={{ marginTop: '0.15rem', display: 'inline-flex' }}>
+                                Expired
+                              </span>
+                            ) : null}
                           </td>
+                          <td style={{ fontSize: '0.85rem' }}>{row.mrp ? `₹${row.mrp}` : '—'}</td>
+                          <td style={{ fontSize: '0.85rem' }}>{row.sale_rate ? `₹${row.sale_rate}` : '—'}</td>
+                          <td style={{ fontSize: '0.85rem', fontWeight: 600 }}>
+                            {fmt(row.quantity)}
+                            {Number(row.free_quantity) > 0 ? (
+                              <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>+{row.free_quantity} free</div>
+                            ) : null}
+                          </td>
+                          <td style={{ fontSize: '0.85rem' }}>{fmt(row.warehouse_id)}</td>
                         </tr>
                       )
                     })
@@ -428,7 +395,7 @@ export function ItemMasterListModal({ onClose }: Props) {
           </div>
         </div>
 
-        {selected ? <ItemDetail item={selected} onClose={() => setSelected(null)} /> : null}
+        {selected ? <StockDetail row={selected} onClose={() => setSelected(null)} /> : null}
       </div>
     </div>
   )

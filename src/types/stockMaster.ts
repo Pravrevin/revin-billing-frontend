@@ -18,6 +18,37 @@ export type StockMaster = {
   updated_at: string
 }
 
+/** One row of the stock movement ledger (IN from purchase, OUT from sale, etc.). */
+export type StockLedgerEntry = {
+  id: number
+  item_id: number
+  item_name?: string | null
+  batch_no?: string | null
+  movement_type: string // IN / OUT
+  quantity?: string | number | null
+  free_quantity?: string | number | null
+  reference_type?: string | null // purchase / sale / sale-reversal / adjustment
+  reference_id?: number | null
+  purchase_rate?: string | number | null
+  mrp?: string | number | null
+  created_at: string
+}
+
+/** One row of the expiry view (derived from a stock batch's expiry_date). */
+export type StockExpiryRow = {
+  id: number
+  item_id: number
+  item_name?: string | null
+  batch_no?: string | null
+  manufacture_date?: string | null
+  expiry_date?: string | null
+  quantity?: string | number | null
+  mrp?: string | number | null
+  sale_rate?: string | number | null
+  days_to_expiry?: number | null // negative = expired
+  status: string // expired / near / ok
+}
+
 /** Fields you may PATCH; decimals may be sent as numbers (API accepts both). */
 export type StockMasterPatchFields = Omit<
   StockMaster,

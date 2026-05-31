@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CreateStockMasterModal } from '../components/stockMaster/CreateStockMasterModal'
 import { StockMasterEditModal } from '../components/stockMaster/StockMasterEditModal'
-import { getBearerToken } from '../lib/apiConfig'
 import { fetchStockMasters } from '../services/stockMasterApi'
 import type { StockMaster } from '../types/stockMaster'
 import styles from './ProductMasterPage.module.css'
@@ -23,10 +22,6 @@ function useBodyScrollLock(locked: boolean) {
 
 function uniqSortedNums(ids: number[]): number[] {
   return [...new Set(ids)].sort((a, b) => a - b)
-}
-
-function uniqSortedStr(values: string[]): string[] {
-  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b))
 }
 
 function parseOptFloat(s: string): number | null {
@@ -246,11 +241,6 @@ export function StockMasterPage() {
     return map
   }, [rows])
 
-  const rackLocations = useMemo(
-    () => uniqSortedStr(rows.map((r) => r.rack_location)),
-    [rows],
-  )
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     const mMin = parseOptFloat(mrpMin)
@@ -363,17 +353,8 @@ export function StockMasterPage() {
     setRows((prev) => prev.map((x) => (x.id === next.id ? next : x)))
   }
 
-  const hasToken = Boolean(getBearerToken())
-
   return (
     <div className={styles.page}>
-      {!hasToken ? (
-        <div className={`${styles.banner} ${styles.bannerHint}`}>
-          Add your access token in <code>.env.local</code> as <code>VITE_API_BEARER_TOKEN</code> so
-          this screen can load live stock (see <code>.env.example</code>).
-        </div>
-      ) : null}
-
       {error ? (
         <div className={`${styles.banner} ${styles.bannerError}`}>
           {error}{' '}
@@ -383,24 +364,22 @@ export function StockMasterPage() {
         </div>
       ) : null}
 
+      {/* ── Page header ── */}
       <div className={styles.top}>
         <div className={styles.titleBlock}>
-          <h1>Stock Master</h1>
-          <p>
-            Batch-level inventory: quantities, MRP and rates, warehouse and rack, and expiry. Filter
-            the grid to find batches quickly, then open a row to review details or update the line.
-          </p>
+          <h1>📦 Stock List</h1>
+          <p>Batch-level inventory — quantities, MRP, rates, warehouse &amp; expiry.</p>
         </div>
         <div className={styles.actions}>
           <button type="button" className={styles.btnPrimary} onClick={() => setCreateOpen(true)}>
-            + Create stock line
+            + Add Stock Line
           </button>
           <button
             type="button"
             className={styles.btnMuted}
             onClick={() => fileRef.current?.click()}
           >
-            Bulk import
+            Bulk Import
           </button>
           <input
             ref={fileRef}
@@ -416,51 +395,59 @@ export function StockMasterPage() {
         </div>
       </div>
 
+      {/* ── Filter bar ── */}
       <div className={`${styles.filterCard} ${styles.pmFilterCard}`}>
         <div className={styles.filterGrid}>
+          {/* Search — spans 2 cols */}
           <div className={`${styles.field} ${styles.pmSearchField}`}>
             <label htmlFor="sm-search" className={styles.pmSearchLabel}>
-              Search stock
+              Search Stock
             </label>
             <input
               id="sm-search"
               className={`${styles.searchInput} ${styles.pmSearchInput}`}
-              placeholder="Batch, rack, item, stock id, MRP, rates, quantity…"
+              placeholder="Item name, batch no, rack location, stock ID…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               autoComplete="off"
             />
           </div>
+
           <div className={styles.field}>
-            <label htmlFor="sm-stock-id">Stock ID</label>
-            <input
-              id="sm-stock-id"
-              className={styles.searchInput}
-              inputMode="numeric"
-              placeholder="Exact id"
-              value={stockId}
-              onChange={(e) => setStockId(e.target.value)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-item-f">Item (product)</label>
+            <label htmlFor="sm-item-f">Item</label>
             <select
               id="sm-item-f"
               className={styles.select}
               value={itemId}
               onChange={(e) => setItemId(e.target.value)}
             >
-              <option value="">All items</option>
+              <option value="">All Items</option>
               {itemIds.map((id) => {
                 const name = itemIdLabels.get(id)
                 return (
                   <option key={id} value={String(id)}>
-                    {name ? `${name} (#${id})` : `Item #${id}`}
+                    {name ? `${name}` : `Item #${id}`}
                   </option>
                 )
               })}
             </select>
           </div>
+
+          <div className={styles.field}>
+            <label htmlFor="sm-exp-f">Expiry</label>
+            <select
+              id="sm-exp-f"
+              className={styles.select}
+              value={expiryFilter}
+              onChange={(e) => setExpiryFilter(e.target.value as typeof expiryFilter)}
+            >
+              <option value="all">Any Expiry</option>
+              <option value="90">Within 90 Days</option>
+              <option value="180">Within 180 Days</option>
+              <option value="expired">Already Expired</option>
+            </select>
+          </div>
+
           <div className={styles.field}>
             <label htmlFor="sm-wh-f">Warehouse</label>
             <select
@@ -469,7 +456,7 @@ export function StockMasterPage() {
               value={warehouseId}
               onChange={(e) => setWarehouseId(e.target.value)}
             >
-              <option value="">All warehouses</option>
+              <option value="">All Warehouses</option>
               {warehouseIds.map((w) => (
                 <option key={w} value={String(w)}>
                   Warehouse {w}
@@ -477,231 +464,139 @@ export function StockMasterPage() {
               ))}
             </select>
           </div>
+
           <div className={styles.field}>
-            <label htmlFor="sm-rack-f">Rack</label>
-            <select
-              id="sm-rack-f"
-              className={styles.select}
-              value={rackLocation}
-              onChange={(e) => setRackLocation(e.target.value)}
-            >
-              <option value="">All racks</option>
-              {rackLocations.map((loc) => (
-                <option key={loc} value={loc}>
-                  {loc}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-batch-f">Batch contains</label>
-            <input
-              id="sm-batch-f"
-              className={styles.searchInput}
-              placeholder="Part of batch number"
-              value={batchContains}
-              onChange={(e) => setBatchContains(e.target.value)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-exp-f">Expiry window</label>
-            <select
-              id="sm-exp-f"
-              className={styles.select}
-              value={expiryFilter}
-              onChange={(e) => setExpiryFilter(e.target.value as typeof expiryFilter)}
-            >
-              <option value="all">Any expiry</option>
-              <option value="90">Due within 90 days</option>
-              <option value="180">Due within 180 days</option>
-              <option value="expired">Already expired</option>
-            </select>
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-free-f">Free quantity</label>
+            <label htmlFor="sm-free-f">Free Qty</label>
             <select
               id="sm-free-f"
               className={styles.select}
               value={freeQtyFilter}
               onChange={(e) => setFreeQtyFilter(e.target.value as typeof freeQtyFilter)}
             >
-              <option value="all">All lines</option>
-              <option value="with">With free stock</option>
-              <option value="without">No free stock</option>
+              <option value="all">All Lines</option>
+              <option value="with">With Free Stock</option>
+              <option value="without">No Free Stock</option>
             </select>
           </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-mrp-min">MRP min</label>
-            <input
-              id="sm-mrp-min"
-              className={styles.searchInput}
-              inputMode="decimal"
-              placeholder="₹"
-              value={mrpMin}
-              onChange={(e) => setMrpMin(e.target.value)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-mrp-max">MRP max</label>
-            <input
-              id="sm-mrp-max"
-              className={styles.searchInput}
-              inputMode="decimal"
-              placeholder="₹"
-              value={mrpMax}
-              onChange={(e) => setMrpMax(e.target.value)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-qty-min">Qty min</label>
-            <input
-              id="sm-qty-min"
-              className={styles.searchInput}
-              inputMode="decimal"
-              value={qtyMin}
-              onChange={(e) => setQtyMin(e.target.value)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-qty-max">Qty max</label>
-            <input
-              id="sm-qty-max"
-              className={styles.searchInput}
-              inputMode="decimal"
-              value={qtyMax}
-              onChange={(e) => setQtyMax(e.target.value)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-sale-min">Sale rate min</label>
-            <input
-              id="sm-sale-min"
-              className={styles.searchInput}
-              inputMode="decimal"
-              placeholder="₹"
-              value={saleRateMin}
-              onChange={(e) => setSaleRateMin(e.target.value)}
-            />
-          </div>
-          <div className={styles.field}>
-            <label htmlFor="sm-pur-max">Purchase rate max</label>
-            <input
-              id="sm-pur-max"
-              className={styles.searchInput}
-              inputMode="decimal"
-              placeholder="₹"
-              value={purchaseRateMax}
-              onChange={(e) => setPurchaseRateMax(e.target.value)}
-            />
-          </div>
         </div>
+
         <div className={styles.filterMeta}>
           <span className={styles.chip}>
-            Showing <strong>{pageItems.length}</strong> of <strong>{filtered.length}</strong> filtered
-            ({rows.length} loaded)
+            Showing <strong>{pageItems.length}</strong> of <strong>{filtered.length}</strong> results
+            {filtered.length !== rows.length ? ` (${rows.length} total)` : ''}
           </span>
           <button type="button" className={styles.resetLink} onClick={resetFilters}>
-            Reset filters
+            Reset Filters
           </button>
         </div>
       </div>
 
+      {/* ── Table ── */}
       <div className={`${styles.tableWrap} ${styles.pmTableWrap}`}>
         {loading ? (
-          <div className={styles.loading}>Loading stock master…</div>
+          <div className={styles.loading}>Loading stock…</div>
         ) : (
           <>
             <div className={styles.tableScroll}>
               <table className={`${styles.table} ${styles.pmTable}`}>
                 <thead>
                   <tr>
-                    <th>ID</th>
-                    <th>Product</th>
-                    <th>Batch</th>
+                    <th style={{ width: 56 }}>ID</th>
+                    <th>Item / Product</th>
+                    <th>Batch No</th>
                     <th>Expiry</th>
-                    <th>MRP</th>
-                    <th>Qty</th>
-                    <th>WH</th>
-                    <th>Rack</th>
-                    <th aria-label="Actions" />
+                    <th style={{ width: 90 }}>MRP</th>
+                    <th style={{ width: 90 }}>Sale Rate</th>
+                    <th style={{ width: 90 }}>Purchase Rate</th>
+                    <th style={{ width: 90 }}>Qty</th>
+                    <th style={{ width: 80 }}>Warehouse</th>
+                    <th style={{ width: 100 }}>Rack</th>
+                    <th style={{ width: 90 }} aria-label="Actions" />
                   </tr>
                 </thead>
                 <tbody>
                   {!pageItems.length ? (
-                    <tr>
-                      <td
-                        colSpan={9}
-                        style={{
-                          textAlign: 'center',
-                          padding: '2rem',
-                          color: 'var(--text-muted)',
-                        }}
-                      >
-                        No stock lines match these filters.
+                    <tr className={styles.emptyRow}>
+                      <td colSpan={11}>
+                        {rows.length === 0 ? 'No stock entries found.' : 'No stock lines match these filters.'}
                       </td>
                     </tr>
-                  ) : null}
-                  {pageItems.map((row) => {
-                    const d = daysUntil(row.expiry_date)
-                    return (
-                      <tr key={row.id}>
-                        <td>
-                          <strong>{row.id}</strong>
-                        </td>
-                        <td className={styles.nameCell}>
-                          <div className={styles.nameMain}>
-                            {row.item_name?.trim() || `Item #${row.item_id}`}
-                          </div>
-                          <div className={styles.nameSub}>#{row.item_id}</div>
-                        </td>
-                        <td className={styles.nameCell}>
-                          <div className={styles.nameMain}>{row.batch_no}</div>
-                          <div className={styles.nameSub}>Pur ₹{row.purchase_rate}</div>
-                        </td>
-                        <td>
-                          {row.expiry_date?.slice(0, 10)}
-                          {d <= 90 && d >= 0 ? (
-                            <div className={styles.nameSub} style={{ color: '#c2410c' }}>
-                              {d}d left
+                  ) : (
+                    pageItems.map((row) => {
+                      const d = daysUntil(row.expiry_date)
+                      return (
+                        <tr key={row.id}>
+                          <td style={{ fontWeight: 600, color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                            #{row.id}
+                          </td>
+                          <td className={styles.nameCell}>
+                            <div className={styles.nameMain}>
+                              {row.item_name?.trim() || `Item #${row.item_id}`}
                             </div>
-                          ) : null}
-                          {d < 0 ? (
-                            <span className={`${styles.badge} ${styles.badgeOff}`}>Expired</span>
-                          ) : null}
-                        </td>
-                        <td>₹{row.mrp}</td>
-                        <td>
-                          {row.quantity}
-                          <div className={styles.nameSub}>+{row.free_quantity} free</div>
-                        </td>
-                        <td>{row.warehouse_id}</td>
-                        <td>{row.rack_location}</td>
-                        <td>
-                          <div className={styles.rowActions}>
-                            <button
-                              type="button"
-                              className={styles.linkBtn}
-                              onClick={() => setDetail(row)}
-                            >
-                              View
-                            </button>
-                            <button
-                              type="button"
-                              className={`${styles.linkBtn} ${styles.linkBtnWarn}`}
-                              onClick={() => setEdit(row)}
-                            >
-                              Edit
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
+                            <div className={styles.nameSub}>Item ID: {row.item_id}</div>
+                          </td>
+                          <td>
+                            <div className={styles.nameMain}>{row.batch_no || '—'}</div>
+                          </td>
+                          <td>
+                            {row.expiry_date?.slice(0, 10) || '—'}
+                            {d <= 90 && d >= 0 ? (
+                              <div className={styles.nameSub} style={{ color: '#c2410c' }}>
+                                {d}d left
+                              </div>
+                            ) : null}
+                            {d < 0 ? (
+                              <span className={`${styles.badge} ${styles.badgeOff}`} style={{ marginTop: '0.15rem', display: 'inline-flex' }}>
+                                Expired
+                              </span>
+                            ) : null}
+                          </td>
+                          <td className={styles.amtCell}>
+                            {row.mrp ? `₹${row.mrp}` : '—'}
+                          </td>
+                          <td className={styles.amtCell}>
+                            {row.sale_rate ? `₹${row.sale_rate}` : '—'}
+                          </td>
+                          <td className={styles.amtCell}>
+                            {row.purchase_rate ? `₹${row.purchase_rate}` : '—'}
+                          </td>
+                          <td>
+                            <span style={{ fontWeight: 600 }}>{row.quantity ?? '—'}</span>
+                            {Number(row.free_quantity) > 0 ? (
+                              <div className={styles.nameSub}>+{row.free_quantity} free</div>
+                            ) : null}
+                          </td>
+                          <td>{row.warehouse_id ?? '—'}</td>
+                          <td>{row.rack_location || '—'}</td>
+                          <td>
+                            <div className={styles.rowActions}>
+                              <button
+                                type="button"
+                                className={styles.linkBtn}
+                                onClick={() => setDetail(row)}
+                              >
+                                View
+                              </button>
+                              <button
+                                type="button"
+                                className={`${styles.linkBtn} ${styles.linkBtnWarn}`}
+                                onClick={() => setEdit(row)}
+                              >
+                                Edit
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
+
+            {/* ── Pagination ── */}
             <div className={styles.pagination}>
-              <div className={styles.field} style={{ maxWidth: 120 }}>
+              <div className={styles.field} style={{ maxWidth: 130 }}>
                 <label htmlFor="sm-pagesize">Rows / page</label>
                 <select
                   id="sm-pagesize"
@@ -712,6 +607,7 @@ export function StockMasterPage() {
                   <option value={10}>10</option>
                   <option value={25}>25</option>
                   <option value={50}>50</option>
+                  <option value={100}>100</option>
                 </select>
               </div>
               <div className={styles.pageBtns}>
@@ -724,7 +620,7 @@ export function StockMasterPage() {
                   ‹
                 </button>
                 <span style={{ padding: '0 0.5rem', fontSize: '0.88rem', fontWeight: 600 }}>
-                  Page {safePage} / {totalPages}
+                  Page {safePage} of {totalPages}
                 </span>
                 <button
                   type="button"

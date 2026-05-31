@@ -1,30 +1,24 @@
 import { useState } from 'react'
-import { NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import {
+  SIDEBAR_SECTIONS,
+  type MenuItem,
+  type ModalAction,
+  type SubItem,
+  type SubSubItem,
+  findMenuById,
+} from '../../data/menus'
 import styles from './AppLayout.module.css'
 
-const navItems = [
-  { to: '/app/dashboard', label: 'Dashboard', icon: '◆' },
-  { to: '/app/products', label: 'Product Master', icon: '◇' },
-  { to: '/app/stock', label: 'Stock Master', icon: '▣' },
-  {
-    label: 'Parties',
-    icon: '◎',
-    children: [
-      { to: '/app/parties/customers', label: 'Customer Master' },
-      { to: '/app/parties/distributors', label: 'Distributor Master' },
-    ],
-  },
-  { to: '/app/sales', label: 'Sales Master', icon: '▸' },
-  { to: '/app/purchases', label: 'Purchase Master', icon: '◂' },
-] as const
+const DASHBOARD_PATH = '/app/dashboard'
 
 export function AppLayout() {
   const { mobile, logout } = useAuth()
   const navigate = useNavigate()
-  const [groupsOpen, setGroupsOpen] = useState<Record<string, boolean>>({
-    Parties: true,
-  })
+  const location = useLocation()
+  const [openMenuIds, setOpenMenuIds] = useState<Record<number, boolean>>({})
+  const [openSubIds, setOpenSubIds] = useState<Record<string, boolean>>({})
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
 
   const handleLogout = () => {
@@ -32,12 +26,134 @@ export function AppLayout() {
     navigate('/')
   }
 
-  const toggleGroup = (label: string) =>
-    setGroupsOpen((prev) => ({ ...prev, [label]: !prev[label] }))
+  const toggleMenu = (id: number) =>
+    setOpenMenuIds((prev) => ({ ...prev, [id]: !prev[id] }))
+
+  const toggleSub = (key: string) =>
+    setOpenSubIds((prev) => ({ ...prev, [key]: !prev[key] }))
+
+  const closeMobile = () => setMobileNavOpen(false)
+
+  const triggerAction = (action: ModalAction) => {
+    closeMobile()
+    navigate(`${DASHBOARD_PATH}?action=${action}`)
+  }
+
+  const renderLeaf = (
+    item: SubItem | SubSubItem,
+    depth: number,
+    keyPrefix: string,
+  ) => {
+    const className = depth === 1 ? styles.subLink : styles.subSubLink
+
+    if (item.to) {
+      return (
+        <NavLink
+          key={keyPrefix}
+          to={item.to}
+          end
+          className={({ isActive }) =>
+            `${className} ${isActive ? styles.active : ''}`
+          }
+          onClick={closeMobile}
+        >
+          <span className={styles.subIcon}>{item.icon}</span>
+          <span className={styles.subLabel}>{item.label}</span>
+          {item.star && <span className={styles.starDot} />}
+        </NavLink>
+      )
+    }
+
+    if (item.action) {
+      return (
+        <button
+          key={keyPrefix}
+          type="button"
+          className={className}
+          onClick={() => triggerAction(item.action!)}
+        >
+          <span className={styles.subIcon}>{item.icon}</span>
+          <span className={styles.subLabel}>{item.label}</span>
+          {item.star && <span className={styles.starDot} />}
+        </button>
+      )
+    }
+
+    return (
+      <button
+        key={keyPrefix}
+        type="button"
+        className={className}
+        onClick={closeMobile}
+      >
+        <span className={styles.subIcon}>{item.icon}</span>
+        <span className={styles.subLabel}>{item.label}</span>
+        {item.star && <span className={styles.starDot} />}
+      </button>
+    )
+  }
+
+  const renderMenu = (menu: MenuItem) => {
+    const isOpen = openMenuIds[menu.id] ?? false
+    return (
+      <div key={menu.id} className={styles.navGroup}>
+        <button
+          type="button"
+          className={styles.navGroupBtn}
+          onClick={() => toggleMenu(menu.id)}
+          aria-expanded={isOpen}
+        >
+          <span className={styles.navIcon}>{menu.icon}</span>
+          <span className={styles.groupLabel}>{menu.label}</span>
+          <span className={styles.chevron}>{isOpen ? '▾' : '▸'}</span>
+        </button>
+        {isOpen && (
+          <div className={styles.subNav}>
+            {menu.subs.map((sub) => {
+              const subKey = `${menu.id}-${sub.id}`
+              if (sub.subs && sub.subs.length > 0) {
+                const subOpen = openSubIds[subKey] ?? false
+                return (
+                  <div key={subKey} className={styles.subGroup}>
+                    <button
+                      type="button"
+                      className={styles.subGroupBtn}
+                      onClick={() => toggleSub(subKey)}
+                      aria-expanded={subOpen}
+                    >
+                      <span className={styles.subIcon}>{sub.icon}</span>
+                      <span className={styles.subLabel}>{sub.label}</span>
+                      <span className={styles.chevron}>
+                        {subOpen ? '▾' : '▸'}
+                      </span>
+                    </button>
+                    {subOpen && (
+                      <div className={styles.subSubNav}>
+                        {sub.subs.map((leaf) =>
+                          renderLeaf(leaf, 2, `${subKey}-${leaf.id}`),
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )
+              }
+              return renderLeaf(sub, 1, subKey)
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  const dashboardActive =
+    location.pathname === DASHBOARD_PATH ||
+    location.pathname === DASHBOARD_PATH + '/'
 
   return (
     <div className={styles.shell}>
-      <aside className={`${styles.sidebar} ${mobileNavOpen ? styles.sidebarOpen : ''}`}>
+      <aside
+        className={`${styles.sidebar} ${mobileNavOpen ? styles.sidebarOpen : ''}`}
+      >
         <div className={styles.brand}>
           <span className={styles.brandMark} aria-hidden />
           <div>
@@ -47,60 +163,34 @@ export function AppLayout() {
         </div>
 
         <nav className={styles.nav} aria-label="Main">
-          {navItems.map((item) => {
-            if ('children' in item) {
-              const isOpen = groupsOpen[item.label] ?? true
-              return (
-                <div key={item.label} className={styles.navGroup}>
-                  <button
-                    type="button"
-                    className={styles.navGroupBtn}
-                    onClick={() => toggleGroup(item.label)}
-                    aria-expanded={isOpen}
-                  >
-                    <span className={styles.navIcon}>{item.icon}</span>
-                    {item.label}
-                    <span className={styles.chevron}>{isOpen ? '▾' : '▸'}</span>
-                  </button>
-                  {isOpen && (
-                    <div className={styles.subNav}>
-                      {item.children.map((sub) => (
-                        <NavLink
-                          key={sub.to}
-                          to={sub.to}
-                          end
-                          className={({ isActive }) =>
-                            `${styles.subLink} ${isActive ? styles.active : ''}`
-                          }
-                          onClick={() => setMobileNavOpen(false)}
-                        >
-                          {sub.label}
-                        </NavLink>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )
-            }
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `${styles.navLink} ${isActive ? styles.active : ''}`
-                }
-                onClick={() => setMobileNavOpen(false)}
-              >
-                <span className={styles.navIcon}>{item.icon}</span>
-                {item.label}
-              </NavLink>
-            )
-          })}
+          <NavLink
+            to={DASHBOARD_PATH}
+            end
+            className={`${styles.navLink} ${dashboardActive ? styles.active : ''}`}
+            onClick={closeMobile}
+          >
+            <span className={styles.navIcon}>◆</span>
+            <span className={styles.groupLabel}>Dashboard</span>
+          </NavLink>
+
+          {SIDEBAR_SECTIONS.map((section) => (
+            <div key={section.label} className={styles.section}>
+              <p className={styles.sectionHead}>{section.label}</p>
+              {section.menuIds.map((id) => {
+                const menu = findMenuById(id)
+                return menu ? renderMenu(menu) : null
+              })}
+            </div>
+          ))}
         </nav>
 
         <div className={styles.sidebarFooter}>
           <p className={styles.userHint}>{mobile}</p>
-          <button type="button" className={styles.logoutBtn} onClick={handleLogout}>
+          <button
+            type="button"
+            className={styles.logoutBtn}
+            onClick={handleLogout}
+          >
             Sign out
           </button>
         </div>
@@ -111,7 +201,7 @@ export function AppLayout() {
           type="button"
           className={styles.backdrop}
           aria-label="Close menu"
-          onClick={() => setMobileNavOpen(false)}
+          onClick={closeMobile}
         />
       )}
 

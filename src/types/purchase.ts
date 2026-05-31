@@ -30,6 +30,10 @@ export type Purchase = {
   tax_percentage?: string | number | null
   tax_amount?: string | number | null
   net_amount?: string | number | null
+  /** Alias used by the list/detail UI; mirrors discount_amount when present. */
+  discount?: string | number | null
+  payment_mode_name?: string | null
+  payment_status?: string | null
   created_at?: string | null
   updated_at?: string | null
   extra_data?: unknown

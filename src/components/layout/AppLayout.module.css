@@ -7,18 +7,15 @@
 .sidebar {
   width: 280px;
   flex-shrink: 0;
-  background: linear-gradient(
-    165deg,
-    var(--medical-deep) 0%,
-    var(--medical-mid) 48%,
-    var(--medical-teal) 100%
-  );
+  background: var(--medical-deep);
   color: #f0fafb;
   display: flex;
   flex-direction: column;
   padding: 1.5rem 1rem 1rem;
   box-shadow: 8px 0 32px rgba(8, 61, 74, 0.18);
-  position: relative;
+  position: sticky;
+  top: 0;
+  height: 100svh;
   z-index: 20;
 }
 
@@ -54,10 +51,28 @@
 
 .nav {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
   overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 0.25rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+}
+
+.nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.nav::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+}
+
+.nav::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
 }
 
 .navLink,
@@ -127,6 +142,122 @@
   background: rgba(94, 234, 212, 0.2);
   color: #ccfbf1;
   font-weight: 600;
+}
+
+.subLink {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.subIcon {
+  font-size: 0.85rem;
+  width: 1.1rem;
+  text-align: center;
+}
+
+.subLabel {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.groupLabel {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.section {
+  margin-top: 0.85rem;
+}
+
+.sectionHead {
+  margin: 0 0 0.25rem 0.6rem;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(204, 251, 241, 0.55);
+}
+
+.subGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.subGroupBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: rgba(240, 250, 251, 0.78);
+  font-size: 0.85rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.subGroupBtn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.subSubNav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.2rem 0 0.35rem 1.6rem;
+}
+
+.subSubLink {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  color: rgba(240, 250, 251, 0.7);
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.subSubLink:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+
+.subSubLink.active {
+  background: rgba(94, 234, 212, 0.18);
+  color: #ccfbf1;
+  font-weight: 600;
+}
+
+.starDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: #fbbf24;
+  box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.18);
+  flex-shrink: 0;
 }
 
 .sidebarFooter {
