@@ -7,6 +7,8 @@ import { DaySummaryModal } from '../components/sales/DaySummaryModal'
 import { AddSupplierModal } from '../components/party/AddSupplierModal'
 import { SupplierListModal } from '../components/party/SupplierListModal'
 import { PurchaseEntryModal } from '../components/purchase/PurchaseEntryModal'
+import { PurchaseHistoryModal } from '../components/purchase/PurchaseHistoryModal'
+import { SupplierPaymentModal } from '../components/purchase/SupplierPaymentModal'
 import { AddCategoryModal } from '../components/category/AddCategoryModal'
 import { CategoryListModal } from '../components/category/CategoryListModal'
 import { AddSubCategoryModal } from '../components/category/AddSubCategoryModal'
@@ -48,6 +50,8 @@ export function DashboardPage() {
   const [showAddSupplier, setShowAddSupplier] = useState(false)
   const [showSupplierList, setShowSupplierList] = useState(false)
   const [showNewPurchase, setShowNewPurchase] = useState(false)
+  const [showPurchaseHistory, setShowPurchaseHistory] = useState(false)
+  const [showSupplierPayment, setShowSupplierPayment] = useState(false)
   const [showStockList, setShowStockList] = useState(false)
   const [showStockLedger, setShowStockLedger] = useState(false)
   const [expiryMode, setExpiryMode] = useState<ExpiryMode | null>(null)
@@ -91,6 +95,8 @@ export function DashboardPage() {
       case 'held-bills':        setShowHeldBills(true); break
       case 'day-summary':       setShowDaySummary(true); break
       case 'new-purchase':      setShowNewPurchase(true); break
+      case 'purchase-history':  setShowPurchaseHistory(true); break
+      case 'supplier-payment':  setShowSupplierPayment(true); break
       case 'stock-list':        setShowStockList(true); break
       case 'stock-ledger':      setShowStockLedger(true); break
       case 'expiry-all':        setExpiryMode('all'); break
@@ -281,6 +287,12 @@ export function DashboardPage() {
           onClose={() => setShowNewPurchase(false)}
           onCreated={() => {}}
         />
+      )}
+      {showPurchaseHistory && (
+        <PurchaseHistoryModal onClose={() => setShowPurchaseHistory(false)} />
+      )}
+      {showSupplierPayment && (
+        <SupplierPaymentModal onClose={() => setShowSupplierPayment(false)} />
       )}
       {showStockList && (
         <StockListModal onClose={() => setShowStockList(false)} />

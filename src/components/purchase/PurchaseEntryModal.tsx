@@ -1,5 +1,6 @@
 import { type CSSProperties, type InputHTMLAttributes, useEffect, useMemo, useRef, useState } from 'react'
 import { CreateItemMasterModal } from '../itemMaster/CreateItemMasterModal'
+import { UploadBillDialog } from './UploadBillDialog'
 import { fetchItemMasters } from '../../services/itemMasterApi'
 import { fetchPartyMasters } from '../../services/partyMasterApi'
 import { createPurchase } from '../../services/purchaseApi'
@@ -8,7 +9,7 @@ import { fetchPaymentModes } from '../../services/paymentModeApi'
 import type { ItemMaster } from '../../types/itemMaster'
 import type { PartyMaster } from '../../types/partyMaster'
 import type { PaymentMode } from '../../types/payment'
-import type { Purchase } from '../../types/purchase'
+import type { ExtractedBill, Purchase } from '../../types/purchase'
 import styles from '../../pages/ProductMasterPage.module.css'
 
 // ── Types ───────────────────────────────────────────────────────────────────
@@ -25,6 +26,8 @@ type ItemRow = {
   discount: string
   gst_percent: string
   expiry_date: string
+  /** Name the AI read off the bill — shown as a hint when item_id couldn't be matched. */
+  extracted_name?: string
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -43,6 +46,11 @@ function emptyRow(): ItemRow {
     gst_percent: '',
     expiry_date: '',
   }
+}
+
+/** "" for null/undefined, otherwise the number as a plain string. */
+function numStr(n: number | null | undefined): string {
+  return n === null || n === undefined ? '' : String(n)
 }
 
 function todayStr() {
@@ -276,6 +284,14 @@ function ItemRowEditor({
           onPick={(item) => onPickItem(row._key, item)}
           onCreateNew={(typedName) => onCreateNew(row._key, typedName)}
         />
+        {!row.item_id && row.extracted_name ? (
+          <div
+            title="AI read this from the bill but could not match it to a saved medicine. Pick the right one or create it."
+            style={{ marginTop: '0.3rem', fontSize: '0.72rem', color: '#b45309', lineHeight: 1.25 }}
+          >
+            ⚠️ AI read: “{row.extracted_name}” — pick or create
+          </div>
+        ) : null}
       </td>
       <td style={{ padding: '0.4rem 0.5rem' }}>{inp('batch_no', 'text', { placeholder: 'BATCH…' })}</td>
       <td style={{ padding: '0.4rem 0.5rem' }}>{inp('quantity', 'number', { min: 0, placeholder: '0' })}</td>
@@ -342,6 +358,10 @@ export function PurchaseEntryModal({
   const [rows, setRows] = useState<ItemRow[]>(() => Array.from({ length: 5 }, emptyRow))
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // AI "Upload Bill" extraction
+  const [showUpload, setShowUpload] = useState(false)
+  const [extractNote, setExtractNote] = useState<string | null>(null)
 
   // Payment
   const [paymentModes, setPaymentModes] = useState<PaymentMode[]>([])
@@ -447,6 +467,45 @@ export function PurchaseEntryModal({
     if (item && createForRow) pickItem(createForRow, item)
     setCreateForRow(null)
     setCreateInitialName('')
+  }
+
+  // Fill the form from an AI bill extraction. Matched items get an item_id;
+  // unmatched ones keep their extracted_name so the user can pick / create them.
+  function applyExtraction(result: ExtractedBill) {
+    setError(null)
+    const h = result.header
+    if (h.supplier_id) setSupplierId(String(h.supplier_id))
+    if (h.invoice_no) setInvoiceNo(h.invoice_no)
+    if (h.invoice_date) setInvoiceDate(h.invoice_date)
+
+    const newRows: ItemRow[] = result.items.map((it) => ({
+      _key: crypto.randomUUID(),
+      item_id: it.item_id ? String(it.item_id) : '',
+      batch_no: it.batch_no ?? '',
+      quantity: numStr(it.quantity),
+      free_quantity: numStr(it.free_quantity) || '0',
+      purchase_rate: numStr(it.purchase_rate),
+      mrp: numStr(it.mrp),
+      sale_rate: numStr(it.sale_rate),
+      discount: numStr(it.discount) || '0',
+      gst_percent: numStr(it.gst_percent),
+      expiry_date: it.expiry_date ?? '',
+      extracted_name: it.extracted_name ?? undefined,
+    }))
+    setRows(newRows.length ? newRows : [emptyRow()])
+
+    const total = result.items.length
+    const parts: string[] = [`🤖 AI filled ${total} item${total === 1 ? '' : 's'} from the bill.`]
+    if (result.unmatched_count > 0) {
+      parts.push(`${result.unmatched_count} could not be matched to a saved medicine — review the highlighted rows and pick or create them.`)
+    } else if (total > 0) {
+      parts.push('All items matched to saved medicines.')
+    }
+    if (!h.supplier_id && h.supplier_name_guess) {
+      parts.push(`Supplier “${h.supplier_name_guess}” isn’t in your list — select it manually above.`)
+    }
+    setExtractNote(parts.join(' '))
+    setShowUpload(false)
   }
 
   const grandTotal = rows.reduce((s, r) => s + rowTotal(r), 0)
@@ -572,6 +631,45 @@ export function PurchaseEntryModal({
 
       {/* Body */}
       <div className={styles.fsBody}>
+        {/* ── AI bill upload action ── */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem',
+            flexWrap: 'wrap',
+            padding: '0.85rem 1rem',
+            marginBottom: '1.1rem',
+            borderRadius: '12px',
+            border: '1px dashed #67e8f9',
+            background: 'linear-gradient(90deg,#ecfeff,#f0fdfa)',
+          }}
+        >
+          <div style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
+            <strong>📑 Have the supplier bill handy?</strong> Skip manual typing — let AI read a PDF or photo and fill
+            this form for you.
+          </div>
+          <button
+            type="button"
+            className={styles.btnPrimary}
+            onClick={() => setShowUpload(true)}
+            disabled={submitting}
+            style={{ whiteSpace: 'nowrap' }}
+          >
+            🤖 Upload Bill (AI)
+          </button>
+        </div>
+
+        {extractNote && (
+          <div
+            className={styles.banner}
+            style={{ background: '#eff6ff', borderColor: '#bfdbfe', color: '#1e40af', marginBottom: '1rem' }}
+          >
+            {extractNote}
+          </div>
+        )}
+
         {optionsErr && (
           <div className={`${styles.banner} ${styles.bannerError}`} style={{ marginBottom: '1rem' }}>
             {optionsErr}
@@ -921,6 +1019,10 @@ export function PurchaseEntryModal({
           }}
           onCreated={handleItemCreated}
         />
+      ) : null}
+
+      {showUpload ? (
+        <UploadBillDialog onClose={() => setShowUpload(false)} onExtracted={applyExtraction} />
       ) : null}
     </div>
   )

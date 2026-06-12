@@ -6,56 +6,93 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import {
+  clearBearerToken,
+  setBearerToken,
+} from '../lib/apiConfig'
+import {
+  loginRequest,
+  type PermissionItem,
+  type UserInfo,
+} from '../services/authApi'
 
 type AuthState = {
-  mobile: string
   isAuthenticated: boolean
+  user: UserInfo | null
+  permissions: PermissionItem[]
 }
 
 type AuthContextValue = AuthState & {
-  login: (mobile: string, password: string) => boolean
+  isSuperadmin: boolean
+  /** Resolves to the logged-in user on success, or throws with a message. */
+  login: (username: string, password: string) => Promise<UserInfo>
   logout: () => void
 }
 
-const STORAGE_KEY = 'revin-bill-auth'
+const STATE_KEY = 'revin-bill-auth'
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
+const EMPTY: AuthState = { isAuthenticated: false, user: null, permissions: [] }
+
 function loadStored(): AuthState {
   try {
-    const raw = sessionStorage.getItem(STORAGE_KEY)
-    if (!raw) return { mobile: '', isAuthenticated: false }
+    const raw = sessionStorage.getItem(STATE_KEY)
+    if (!raw) return EMPTY
     const parsed = JSON.parse(raw) as AuthState
-    if (parsed?.isAuthenticated && typeof parsed.mobile === 'string') {
-      return { mobile: parsed.mobile, isAuthenticated: true }
+    if (parsed?.isAuthenticated && parsed.user) {
+      return {
+        isAuthenticated: true,
+        user: parsed.user,
+        permissions: Array.isArray(parsed.permissions) ? parsed.permissions : [],
+      }
     }
   } catch {
     /* ignore */
   }
-  return { mobile: '', isAuthenticated: false }
+  return EMPTY
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(loadStored)
 
-  const login = useCallback((mobile: string, password: string) => {
-    const m = mobile.trim()
-    const p = password.trim()
-    if (!m || !p) return false
-    const next = { mobile: m, isAuthenticated: true }
+  const persist = useCallback((next: AuthState) => {
     setState(next)
-    sessionStorage.setItem(STORAGE_KEY, JSON.stringify(next))
-    return true
+    try {
+      sessionStorage.setItem(STATE_KEY, JSON.stringify(next))
+    } catch {
+      /* ignore */
+    }
   }, [])
 
+  const login = useCallback(
+    async (username: string, password: string): Promise<UserInfo> => {
+      const result = await loginRequest(username.trim(), password)
+      setBearerToken(result.access_token)
+      persist({
+        isAuthenticated: true,
+        user: result.user,
+        permissions: result.permissions || [],
+      })
+      return result.user
+    },
+    [persist],
+  )
+
   const logout = useCallback(() => {
-    setState({ mobile: '', isAuthenticated: false })
-    sessionStorage.removeItem(STORAGE_KEY)
+    clearBearerToken()
+    setState(EMPTY)
+    try {
+      sessionStorage.removeItem(STATE_KEY)
+    } catch {
+      /* ignore */
+    }
   }, [])
 
   const value = useMemo<AuthContextValue>(
     () => ({
       ...state,
+      isSuperadmin: state.user?.role === 'superadmin',
       login,
       logout,
     }),

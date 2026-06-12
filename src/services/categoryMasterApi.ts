@@ -27,7 +27,7 @@ export async function createCategory(body: { category_name: string; description?
 }
 
 export async function updateCategory(id: number, body: Partial<{ category_name: string; description: string; is_active: boolean }>): Promise<CategoryMaster> {
-  const res = await fetch(apiUrl(`/api/v1/category-master/${id}/`), {
+  const res = await fetch(apiUrl(`/api/v1/category-master/${id}`), {
     method: 'PATCH', headers: authHeaders(), body: JSON.stringify(body),
   })
   if (!res.ok) { const t = await res.text(); throw new Error(t || `Update failed (${res.status})`) }
@@ -54,7 +54,7 @@ export async function createSubCategory(body: { sub_category_name: string; categ
 }
 
 export async function updateSubCategory(id: number, body: Partial<{ sub_category_name: string; category_id: number; description: string; is_active: boolean }>): Promise<SubCategoryMaster> {
-  const res = await fetch(apiUrl(`/api/v1/category-master/sub-category/${id}/`), {
+  const res = await fetch(apiUrl(`/api/v1/category-master/sub-category/${id}`), {
     method: 'PATCH', headers: authHeaders(), body: JSON.stringify(body),
   })
   if (!res.ok) { const t = await res.text(); throw new Error(t || `Update failed (${res.status})`) }

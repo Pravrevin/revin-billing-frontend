@@ -34,7 +34,8 @@ export async function updateItemMaster(
   id: number,
   fields: Partial<ItemMasterPatchFields>,
 ): Promise<ItemMaster> {
-  const url = apiUrl(`/api/v1/item-master/${id}/`)
+  // No trailing slash — avoids a 307 redirect that strips auth on the cross-origin hop.
+  const url = apiUrl(`/api/v1/item-master/${id}`)
   const body = { ...fields, item_id: id }
   const res = await fetch(url, {
     method: 'PATCH',

@@ -1,25 +1,37 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
+import { logMenuAccess } from '../../services/authApi'
+import { AiAssistant } from '../assistant/AiAssistant'
 import {
   SIDEBAR_SECTIONS,
+  buildPermissionSet,
+  canSeeMenu,
+  canSeeSub,
+  findMenuById,
   type MenuItem,
   type ModalAction,
   type SubItem,
   type SubSubItem,
-  findMenuById,
 } from '../../data/menus'
 import styles from './AppLayout.module.css'
 
 const DASHBOARD_PATH = '/app/dashboard'
 
 export function AppLayout() {
-  const { mobile, logout } = useAuth()
+  const { user, permissions, isSuperadmin, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const [openMenuIds, setOpenMenuIds] = useState<Record<number, boolean>>({})
   const [openSubIds, setOpenSubIds] = useState<Record<string, boolean>>({})
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+
+  const ps = useMemo(() => buildPermissionSet(permissions), [permissions])
+
+  // Superadmin can see everything; pharmacy users are limited to their grants.
+  const showMenu = (menuId: number) => isSuperadmin || canSeeMenu(ps, menuId)
+  const showSub = (menuId: number, subId: number) =>
+    isSuperadmin || canSeeSub(ps, menuId, subId)
 
   const handleLogout = () => {
     logout()
@@ -34,8 +46,13 @@ export function AppLayout() {
 
   const closeMobile = () => setMobileNavOpen(false)
 
-  const triggerAction = (action: ModalAction) => {
+  const onLeafClick = (menuId: number, subId: number) => {
+    logMenuAccess(menuId, subId)
     closeMobile()
+  }
+
+  const triggerAction = (action: ModalAction, menuId: number, subId: number) => {
+    onLeafClick(menuId, subId)
     navigate(`${DASHBOARD_PATH}?action=${action}`)
   }
 
@@ -43,6 +60,8 @@ export function AppLayout() {
     item: SubItem | SubSubItem,
     depth: number,
     keyPrefix: string,
+    menuId: number,
+    subId: number,
   ) => {
     const className = depth === 1 ? styles.subLink : styles.subSubLink
 
@@ -55,7 +74,7 @@ export function AppLayout() {
           className={({ isActive }) =>
             `${className} ${isActive ? styles.active : ''}`
           }
-          onClick={closeMobile}
+          onClick={() => onLeafClick(menuId, subId)}
         >
           <span className={styles.subIcon}>{item.icon}</span>
           <span className={styles.subLabel}>{item.label}</span>
@@ -70,7 +89,7 @@ export function AppLayout() {
           key={keyPrefix}
           type="button"
           className={className}
-          onClick={() => triggerAction(item.action!)}
+          onClick={() => triggerAction(item.action!, menuId, subId)}
         >
           <span className={styles.subIcon}>{item.icon}</span>
           <span className={styles.subLabel}>{item.label}</span>
@@ -84,7 +103,7 @@ export function AppLayout() {
         key={keyPrefix}
         type="button"
         className={className}
-        onClick={closeMobile}
+        onClick={() => onLeafClick(menuId, subId)}
       >
         <span className={styles.subIcon}>{item.icon}</span>
         <span className={styles.subLabel}>{item.label}</span>
@@ -94,6 +113,9 @@ export function AppLayout() {
   }
 
   const renderMenu = (menu: MenuItem) => {
+    const visibleSubs = menu.subs.filter((sub) => showSub(menu.id, sub.id))
+    if (visibleSubs.length === 0) return null
+
     const isOpen = openMenuIds[menu.id] ?? false
     return (
       <div key={menu.id} className={styles.navGroup}>
@@ -109,7 +131,7 @@ export function AppLayout() {
         </button>
         {isOpen && (
           <div className={styles.subNav}>
-            {menu.subs.map((sub) => {
+            {visibleSubs.map((sub) => {
               const subKey = `${menu.id}-${sub.id}`
               if (sub.subs && sub.subs.length > 0) {
                 const subOpen = openSubIds[subKey] ?? false
@@ -130,14 +152,14 @@ export function AppLayout() {
                     {subOpen && (
                       <div className={styles.subSubNav}>
                         {sub.subs.map((leaf) =>
-                          renderLeaf(leaf, 2, `${subKey}-${leaf.id}`),
+                          renderLeaf(leaf, 2, `${subKey}-${leaf.id}`, menu.id, sub.id),
                         )}
                       </div>
                     )}
                   </div>
                 )
               }
-              return renderLeaf(sub, 1, subKey)
+              return renderLeaf(sub, 1, subKey, menu.id, sub.id)
             })}
           </div>
         )}
@@ -149,6 +171,9 @@ export function AppLayout() {
     location.pathname === DASHBOARD_PATH ||
     location.pathname === DASHBOARD_PATH + '/'
 
+  const pharmacyName = user?.pharmacy?.name
+  const footerName = user?.full_name || user?.username || ''
+
   return (
     <div className={styles.shell}>
       <aside
@@ -158,7 +183,9 @@ export function AppLayout() {
           <span className={styles.brandMark} aria-hidden />
           <div>
             <strong>Revin Bill</strong>
-            <span className={styles.brandTag}>Medical billing</span>
+            <span className={styles.brandTag}>
+              {pharmacyName || 'Medical billing'}
+            </span>
           </div>
         </div>
 
@@ -173,19 +200,28 @@ export function AppLayout() {
             <span className={styles.groupLabel}>Dashboard</span>
           </NavLink>
 
-          {SIDEBAR_SECTIONS.map((section) => (
-            <div key={section.label} className={styles.section}>
-              <p className={styles.sectionHead}>{section.label}</p>
-              {section.menuIds.map((id) => {
-                const menu = findMenuById(id)
-                return menu ? renderMenu(menu) : null
-              })}
-            </div>
-          ))}
+          {SIDEBAR_SECTIONS.map((section) => {
+            const menus = section.menuIds
+              .filter((id) => showMenu(id))
+              .map((id) => findMenuById(id))
+              .filter((m): m is MenuItem => Boolean(m))
+            // Render the section only if it has at least one rendered menu.
+            const rendered = menus.map((menu) => renderMenu(menu)).filter(Boolean)
+            if (rendered.length === 0) return null
+            return (
+              <div key={section.label} className={styles.section}>
+                <p className={styles.sectionHead}>{section.label}</p>
+                {rendered}
+              </div>
+            )
+          })}
         </nav>
 
         <div className={styles.sidebarFooter}>
-          <p className={styles.userHint}>{mobile}</p>
+          <p className={styles.userHint}>
+            {footerName}
+            {pharmacyName ? ` · ${pharmacyName}` : ''}
+          </p>
           <button
             type="button"
             className={styles.logoutBtn}
@@ -223,6 +259,8 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      <AiAssistant />
     </div>
   )
 }

@@ -19,6 +19,10 @@ import { ReportsPage } from './pages/ReportsPage'
 import { SalesMasterPage } from './pages/SalesMasterPage'
 import { StockMasterPage } from './pages/StockMasterPage'
 import { SubCategoryMasterPage } from './pages/SubCategoryMasterPage'
+import { AdminLayout } from './pages/admin/AdminLayout'
+import { PharmaciesPage } from './pages/admin/PharmaciesPage'
+import { PharmacyDetailPage } from './pages/admin/PharmacyDetailPage'
+import { InsightsPage } from './pages/admin/InsightsPage'
 
 export default function App() {
   return (
@@ -26,6 +30,19 @@ export default function App() {
       <Routes>
         <Route path="/" element={<LandingPage />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/admin"
+          element={
+            <ProtectedRoute requireRole="superadmin">
+              <AdminLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<Navigate to="pharmacies" replace />} />
+          <Route path="pharmacies" element={<PharmaciesPage />} />
+          <Route path="pharmacies/:id" element={<PharmacyDetailPage />} />
+          <Route path="insights" element={<InsightsPage />} />
+        </Route>
         <Route
           path="/app"
           element={

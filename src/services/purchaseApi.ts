@@ -1,5 +1,5 @@
 import { apiUrl, getBearerToken } from '../lib/apiConfig'
-import type { Purchase } from '../types/purchase'
+import type { ExtractedBill, Purchase } from '../types/purchase'
 
 function authHeaders(): HeadersInit {
   const token = getBearerToken()
@@ -70,7 +70,10 @@ export async function fetchAllPurchases(params?: {
 }
 
 export async function fetchPurchaseById(id: number): Promise<Purchase> {
-  const res = await fetch(apiUrl(`/api/v1/purchases/${id}/`), {
+  // No trailing slash: the backend route is /purchases/{id}. A trailing slash
+  // triggers a 307 redirect to an absolute backend URL, and browsers strip the
+  // Authorization header on that cross-origin hop → 401 (View invoice broke).
+  const res = await fetch(apiUrl(`/api/v1/purchases/${id}`), {
     headers: authHeaders(),
   })
   if (!res.ok) {
@@ -79,6 +82,29 @@ export async function fetchPurchaseById(id: number): Promise<Purchase> {
   }
   const data: unknown = await res.json()
   return normalizePurchaseOne(data)
+}
+
+/**
+ * Upload a supplier bill (one PDF, one image, or several images) and let the
+ * AI extract a purchase-entry prefill. Slow — OCR + LLM can take 20–60s.
+ */
+export async function extractBill(files: File[]): Promise<ExtractedBill> {
+  const token = getBearerToken()
+  const headers: Record<string, string> = { Accept: 'application/json' }
+  if (token) headers.Authorization = `Bearer ${token}`
+  // NB: do NOT set Content-Type — the browser adds the multipart boundary.
+  const form = new FormData()
+  for (const f of files) form.append('files', f)
+  const res = await fetch(apiUrl('/api/v1/purchases/extract-bill'), {
+    method: 'POST',
+    headers,
+    body: form,
+  })
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(text || `Bill extraction failed (${res.status})`)
+  }
+  return res.json() as Promise<ExtractedBill>
 }
 
 export async function createPurchase(payload: unknown): Promise<Purchase> {

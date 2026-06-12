@@ -16,6 +16,36 @@ export type PurchaseItem = {
   total?: string | number | null
 }
 
+/** One line item as returned by the AI bill-extraction endpoint (purchase prefill). */
+export type ExtractedBillItem = {
+  item_id: number | null
+  extracted_name: string | null
+  matched_name: string | null
+  batch_no: string | null
+  quantity: number | null
+  free_quantity: number | null
+  purchase_rate: number | null
+  mrp: number | null
+  sale_rate: number | null
+  discount: number | null
+  gst_percent: number | null
+  expiry_date: string | null
+}
+
+/** Response of POST /purchases/extract-bill — a prefill payload for the entry form. */
+export type ExtractedBill = {
+  header: {
+    supplier_id: number | null
+    supplier_name_guess: string | null
+    invoice_no: string | null
+    invoice_date: string | null
+  }
+  items: ExtractedBillItem[]
+  unmatched_count: number
+  column_map: Record<string, string>
+  raw: unknown
+}
+
 export type Purchase = {
   id: number
   invoice_no?: string | null

@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { SearchableSelect } from '../ui/SearchableSelect'
 import { INDIA_STATES, INDIA_STATE_CITIES } from '../../data/indiaCities'
-import { createPartyMaster } from '../../services/partyMasterApi'
+import { createPartyMaster, lookupGstin } from '../../services/partyMasterApi'
 import styles from '../../pages/ProductMasterPage.module.css'
 
 type FormState = {
@@ -117,6 +117,8 @@ export function AddSupplierModal({ onClose, onCreated }: Props) {
   const [saving, setSaving] = useState(false)
   const [err, setErr] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [gstLoading, setGstLoading] = useState(false)
+  const [gstNote, setGstNote] = useState<{ type: 'info' | 'error'; text: string } | null>(null)
 
   const patch =
     <K extends keyof FormState>(key: K) =>
@@ -125,6 +127,43 @@ export function AddSupplierModal({ onClose, onCreated }: Props) {
 
   function handleStateChange(val: string) {
     setForm((prev) => ({ ...prev, state: val, city: '' }))
+  }
+
+  async function handleFetchGst() {
+    const gstin = form.gstin.trim().toUpperCase()
+    setGstNote(null)
+    if (!gstin) {
+      setGstNote({ type: 'error', text: 'Enter a GSTIN first.' })
+      return
+    }
+    setGstLoading(true)
+    try {
+      const d = await lookupGstin(gstin)
+      setForm((prev) => ({
+        ...prev,
+        gstin: d.gstin,
+        // Only overwrite fields the lookup actually resolved; keep what the user typed.
+        party_name: d.party_name?.trim() || prev.party_name,
+        address: d.address?.trim() || prev.address,
+        state: d.state?.trim() || prev.state,
+        // City depends on the new state; clear stale city only when state changed.
+        city: d.city?.trim() || (d.state?.trim() && d.state.trim() !== prev.state ? '' : prev.city),
+        pincode: d.pincode?.trim() || prev.pincode,
+        pan_card: d.pan_card?.trim() || prev.pan_card,
+      }))
+      setGstNote(
+        d.source === 'appyflow'
+          ? { type: 'info', text: `Details fetched${d.status ? ` · ${d.status}` : ''}.` }
+          : {
+              type: 'info',
+              text: 'GSTIN is valid. State and PAN filled — set a GST API key to auto-fill name & address.',
+            },
+      )
+    } catch (e) {
+      setGstNote({ type: 'error', text: e instanceof Error ? e.message : 'GST lookup failed.' })
+    } finally {
+      setGstLoading(false)
+    }
   }
 
   const cityOptions = form.state ? (INDIA_STATE_CITIES[form.state] ?? []) : []
@@ -305,7 +344,37 @@ export function AddSupplierModal({ onClose, onCreated }: Props) {
                       <span className={styles.fieldLabelTitle}>GSTIN</span>
                       <span className={styles.fieldLabelKey}>gstin</span>
                     </label>
-                    {inp('gstin', 'e.g. 33AABCM1234R1ZY')}
+                    <div style={{ display: 'flex', gap: 8 }}>
+                      <input
+                        id="add-supplier-gstin"
+                        className={styles.searchInput}
+                        style={{ flex: 1 }}
+                        value={form.gstin}
+                        onChange={(e) => {
+                          patch('gstin')(e.target.value)
+                          if (gstNote) setGstNote(null)
+                        }}
+                        placeholder="e.g. 33AABCM1234R1ZY"
+                        autoComplete="off"
+                      />
+                      <button
+                        type="button"
+                        className={styles.btnGhost}
+                        onClick={handleFetchGst}
+                        disabled={gstLoading}
+                        style={{ whiteSpace: 'nowrap' }}
+                      >
+                        {gstLoading ? 'Fetching…' : 'Fetch details'}
+                      </button>
+                    </div>
+                    {gstNote ? (
+                      <span
+                        className={styles.fieldLabelKey}
+                        style={{ color: gstNote.type === 'error' ? '#b91c1c' : '#166534' }}
+                      >
+                        {gstNote.text}
+                      </span>
+                    ) : null}
                   </div>
                   <div className={styles.formField}>
                     <label className={styles.fieldLabel} htmlFor="add-supplier-drug_license_no">

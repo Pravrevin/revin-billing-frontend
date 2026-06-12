@@ -33,7 +33,8 @@ export async function updateStockMaster(
   id: number,
   fields: Partial<StockMasterPatchFields>,
 ): Promise<StockMaster> {
-  const url = apiUrl(`/api/v1/stock-master/${id}/`)
+  // No trailing slash — avoids a 307 redirect that strips auth on the cross-origin hop.
+  const url = apiUrl(`/api/v1/stock-master/${id}`)
   const body = { ...fields, id }
   const res = await fetch(url, {
     method: 'PATCH',

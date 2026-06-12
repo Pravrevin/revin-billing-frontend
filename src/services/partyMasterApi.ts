@@ -29,6 +29,36 @@ export async function fetchPartyMasters(partyType: PartyTypeParam): Promise<Part
   return data as PartyMaster[]
 }
 
+export type GstLookupResult = {
+  gstin: string
+  pan_card?: string | null
+  party_name?: string | null
+  address?: string | null
+  state?: string | null
+  city?: string | null
+  pincode?: string | null
+  status?: string | null
+  /** "appyflow" when full details were fetched, "derived" when only state/PAN are known. */
+  source: string
+}
+
+export async function lookupGstin(gstin: string): Promise<GstLookupResult> {
+  const res = await fetch(apiUrl(`/api/v1/party-master/gst-lookup/${encodeURIComponent(gstin)}`), {
+    headers: authHeaders(),
+  })
+  if (!res.ok) {
+    let detail = `GST lookup failed (${res.status})`
+    try {
+      const body = (await res.json()) as { detail?: string }
+      if (body?.detail) detail = body.detail
+    } catch {
+      /* keep default */
+    }
+    throw new Error(detail)
+  }
+  return res.json() as Promise<GstLookupResult>
+}
+
 export async function createPartyMaster(payload: Record<string, unknown>): Promise<PartyMaster> {
   const res = await fetch(apiUrl('/api/v1/party-master/'), {
     method: 'POST',

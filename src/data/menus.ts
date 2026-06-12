@@ -6,6 +6,8 @@ export type ModalAction =
   | 'add-supplier'
   | 'supplier-list'
   | 'new-purchase'
+  | 'purchase-history'
+  | 'supplier-payment'
   | 'add-customer'
   | 'customer-list'
   | 'customer-ledger'
@@ -89,8 +91,8 @@ export const MENUS: MenuItem[] = [
     subs: [
       { id: 1, icon: '➕', label: 'New Purchase', action: 'new-purchase' },
       { id: 2, icon: '↩️', label: 'Purchase Return' },
-      { id: 3, icon: '💸', label: 'Supplier Payment' },
-      { id: 4, icon: '📜', label: 'Purchase History' },
+      { id: 3, icon: '💸', label: 'Supplier Payment', action: 'supplier-payment' },
+      { id: 4, icon: '📜', label: 'Purchase History', action: 'purchase-history' },
     ],
   },
   {
@@ -230,4 +232,42 @@ export const SIDEBAR_SECTIONS: SidebarSection[] = [
 
 export function findMenuById(id: number): MenuItem | undefined {
   return MENUS.find((m) => m.id === id)
+}
+
+// ── permissions ────────────────────────────────────────────────────────────
+// A grant is a (menu_id, sub_id) pair. sub_id === null grants the whole menu.
+
+export type Permission = { menu_id: number; sub_id: number | null }
+
+/** Fast lookup set built once per render from the user's permission list. */
+export type PermissionSet = {
+  /** menu ids the user can see at all (whole-menu OR at least one sub granted). */
+  menus: Set<number>
+  /** "menuId:subId" pairs explicitly granted. */
+  subs: Set<string>
+  /** menu ids granted wholesale (every sub allowed). */
+  wholeMenus: Set<number>
+}
+
+export function buildPermissionSet(perms: Permission[]): PermissionSet {
+  const menus = new Set<number>()
+  const subs = new Set<string>()
+  const wholeMenus = new Set<number>()
+  for (const p of perms) {
+    menus.add(p.menu_id)
+    if (p.sub_id === null || p.sub_id === undefined) {
+      wholeMenus.add(p.menu_id)
+    } else {
+      subs.add(`${p.menu_id}:${p.sub_id}`)
+    }
+  }
+  return { menus, subs, wholeMenus }
+}
+
+export function canSeeMenu(ps: PermissionSet, menuId: number): boolean {
+  return ps.menus.has(menuId)
+}
+
+export function canSeeSub(ps: PermissionSet, menuId: number, subId: number): boolean {
+  return ps.wholeMenus.has(menuId) || ps.subs.has(`${menuId}:${subId}`)
 }

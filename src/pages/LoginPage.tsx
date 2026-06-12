@@ -4,28 +4,38 @@ import { useAuth } from '../context/AuthContext'
 import styles from './LoginPage.module.css'
 
 export function LoginPage() {
-  const { login, isAuthenticated } = useAuth()
+  const { login, isAuthenticated, isSuperadmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
   const from = (location.state as { from?: { pathname: string } })?.from?.pathname
 
-  const [mobile, setMobile] = useState('')
+  const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
   if (isAuthenticated) {
-    return <Navigate to={from || '/app/dashboard'} replace />
+    const home = isSuperadmin ? '/admin' : '/app/dashboard'
+    return <Navigate to={from || home} replace />
   }
 
-  const onSubmit = (e: FormEvent) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError('')
-    const ok = login(mobile, password)
-    if (!ok) {
-      setError('Enter your mobile number and password to continue.')
+    if (!username.trim() || !password) {
+      setError('Enter your username and password to continue.')
       return
     }
-    navigate(from || '/app/dashboard', { replace: true })
+    setBusy(true)
+    try {
+      const user = await login(username, password)
+      const home = user.role === 'superadmin' ? '/admin' : '/app/dashboard'
+      navigate(from || home, { replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed. Please try again.')
+    } finally {
+      setBusy(false)
+    }
   }
 
   return (
@@ -46,14 +56,13 @@ export function LoginPage() {
 
           <form className={styles.form} onSubmit={onSubmit} noValidate>
             <label className={styles.label}>
-              Mobile number
+              Username
               <input
-                type="tel"
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="e.g. 98765 43210"
-                value={mobile}
-                onChange={(e) => setMobile(e.target.value)}
+                type="text"
+                autoComplete="username"
+                placeholder="e.g. admin"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className={styles.input}
               />
             </label>
@@ -73,13 +82,13 @@ export function LoginPage() {
                 {error}
               </p>
             ) : null}
-            <button type="submit" className={styles.submit}>
-              Enter dashboard
+            <button type="submit" className={styles.submit} disabled={busy}>
+              {busy ? 'Signing in…' : 'Enter dashboard'}
             </button>
           </form>
 
           <p className={styles.hint}>
-            Demo: use any mobile and password — both fields must be filled.
+            Use the credentials provided by your administrator.
           </p>
         </div>
       </div>
