@@ -37,6 +37,7 @@ import {
   type SubItem,
 } from '../data/menus'
 import { NAV_ICONS, NavGlyph } from '../components/layout/navIcons'
+import { shortcutHint } from '../data/shortcuts'
 import {
   fetchSalesReport,
   fetchPurchaseReport,
@@ -474,6 +475,10 @@ export function DashboardPage() {
                   onClick={() => handleSubItem(item as SubItem)}
                 >
                   {item.star && <span className={styles.itemStarDot} />}
+                  {(() => {
+                    const hint = shortcutHint(item)
+                    return hint ? <kbd className={styles.itemKbd}>{hint}</kbd> : null
+                  })()}
                   <span className={styles.itemIcon}>{item.icon}</span>
                   <span className={styles.itemLabel}>{item.label}</span>
                   {(item as SubItem).subs && (

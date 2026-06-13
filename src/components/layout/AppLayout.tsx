@@ -16,7 +16,9 @@ import {
   type SubSubItem,
 } from '../../data/menus'
 import { DASHBOARD_ICON, NAV_ICONS, NavGlyph } from './navIcons'
-import type { CSSProperties } from 'react'
+import { ShortcutsHelp } from './ShortcutsHelp'
+import { SHORTCUTS, shortcutHint } from '../../data/shortcuts'
+import { useEffect, type CSSProperties } from 'react'
 import styles from './AppLayout.module.css'
 
 const DASHBOARD_PATH = '/app/dashboard'
@@ -29,6 +31,34 @@ export function AppLayout() {
   const [openSubIds, setOpenSubIds] = useState<Record<string, boolean>>({})
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [helpOpen, setHelpOpen] = useState(false)
+
+  // Marg-style global keyboard shortcuts.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'F1') {
+        e.preventDefault()
+        setHelpOpen((v) => !v)
+        return
+      }
+      // Don't hijack typing in fields.
+      const t = e.target as HTMLElement | null
+      const typing = !!t && (
+        t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' ||
+        t.tagName === 'SELECT' || t.isContentEditable
+      )
+      if (typing || !e.altKey || e.ctrlKey || e.metaKey) return
+      const sc = SHORTCUTS.find((s) => s.code === e.code)
+      if (!sc) return
+      e.preventDefault()
+      setHelpOpen(false)
+      setMobileNavOpen(false)
+      if (sc.to) navigate(sc.to)
+      else if (sc.action) navigate(`${DASHBOARD_PATH}?action=${sc.action}`)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [navigate])
 
   const ps = useMemo(() => buildPermissionSet(permissions), [permissions])
 
@@ -68,6 +98,7 @@ export function AppLayout() {
     subId: number,
   ) => {
     const className = depth === 1 ? styles.subLink : styles.subSubLink
+    const hint = shortcutHint(item)
 
     if (item.to) {
       return (
@@ -82,6 +113,7 @@ export function AppLayout() {
         >
           <span className={styles.subIcon}>{item.icon}</span>
           <span className={styles.subLabel}>{item.label}</span>
+          {hint && <kbd className={styles.leafKbd}>{hint}</kbd>}
           {item.star && <span className={styles.starDot} />}
         </NavLink>
       )
@@ -97,6 +129,7 @@ export function AppLayout() {
         >
           <span className={styles.subIcon}>{item.icon}</span>
           <span className={styles.subLabel}>{item.label}</span>
+          {hint && <kbd className={styles.leafKbd}>{hint}</kbd>}
           {item.star && <span className={styles.starDot} />}
         </button>
       )
@@ -283,6 +316,19 @@ export function AppLayout() {
             Menu
           </button>
           <div className={styles.topBarMeta}>
+            <button
+              type="button"
+              className={styles.shortcutsBtn}
+              onClick={() => setHelpOpen(true)}
+              title="Keyboard shortcuts (F1)"
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="5" width="20" height="14" rx="2" />
+                <path d="M6 9h.01M10 9h.01M14 9h.01M18 9h.01M9 13h6" />
+              </svg>
+              <span className={styles.shortcutsLabel}>Shortcuts</span>
+              <kbd className={styles.shortcutsKbd}>F1</kbd>
+            </button>
             <span className={styles.pill}>Secure session</span>
           </div>
         </header>
@@ -292,6 +338,8 @@ export function AppLayout() {
       </div>
 
       <AiAssistant />
+
+      {helpOpen && <ShortcutsHelp onClose={() => setHelpOpen(false)} />}
     </div>
   )
 }

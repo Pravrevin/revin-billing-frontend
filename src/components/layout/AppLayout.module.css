@@ -351,6 +351,20 @@
   font-weight: 600;
 }
 
+.leafKbd {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #99f6e4;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 5px;
+  padding: 0.08rem 0.32rem;
+  white-space: nowrap;
+}
+
 .starDot {
   width: 6px;
   height: 6px;
@@ -449,6 +463,49 @@
 
 .topBarMeta {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.shortcutsBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.7rem 0.4rem 0.6rem;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface-0);
+  color: var(--text);
+  font: inherit;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.shortcutsBtn:hover {
+  background: var(--accent-soft);
+  border-color: var(--medical-teal);
+  color: var(--medical-deep);
+}
+
+.shortcutsBtn svg { width: 18px; height: 18px; }
+
+.shortcutsKbd {
+  font-family: var(--font-display);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  background: var(--surface-1);
+  border: 1px solid var(--border-strong);
+  border-radius: 5px;
+  padding: 0.05rem 0.35rem;
+}
+
+@media (max-width: 640px) {
+  .shortcutsLabel,
+  .shortcutsKbd { display: none; }
 }
 
 .pill {
