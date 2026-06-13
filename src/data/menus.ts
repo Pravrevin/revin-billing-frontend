@@ -223,11 +223,9 @@ export type SidebarSection = {
 
 export const SIDEBAR_SECTIONS: SidebarSection[] = [
   { label: 'Transactions', menuIds: [1, 2, 6] },
-  { label: 'Inventory',    menuIds: [3, 8] },
+  { label: 'Inventory',    menuIds: [3, 8, 7] },
   { label: 'Parties',      menuIds: [4, 5] },
   { label: 'Masters',      menuIds: [10, 11, 12, 13, 14, 15] },
-  { label: 'Insights',     menuIds: [7] },
-  { label: 'System',       menuIds: [9] },
 ]
 
 export function findMenuById(id: number): MenuItem | undefined {

@@ -37,6 +37,24 @@
   100% { box-shadow: 0 0 0 0 rgba(52,211,153,0); }
 }
 
+/* ── Docked behaviour (desktop) ────────────────────────────────────────── */
+/* When open, push the app content left so the panel never covers it. */
+:global(body) {
+  transition: padding-right 0.22s ease;
+}
+@media (min-width: 901px) {
+  :global(body.ai-docked) {
+    padding-right: min(440px, 100vw);
+  }
+  /* Non-modal on desktop: no dimming, page stays usable. */
+  .backdrop {
+    display: none;
+  }
+  .drawer {
+    box-shadow: -8px 0 24px rgba(8, 47, 73, 0.14);
+  }
+}
+
 /* ── Backdrop + drawer ─────────────────────────────────────────────────── */
 .backdrop {
   position: fixed;

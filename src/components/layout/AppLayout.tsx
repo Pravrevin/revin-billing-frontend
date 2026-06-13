@@ -5,6 +5,7 @@ import { logMenuAccess } from '../../services/authApi'
 import { AiAssistant } from '../assistant/AiAssistant'
 import {
   SIDEBAR_SECTIONS,
+  TILE_COLORS,
   buildPermissionSet,
   canSeeMenu,
   canSeeSub,
@@ -14,6 +15,8 @@ import {
   type SubItem,
   type SubSubItem,
 } from '../../data/menus'
+import { DASHBOARD_ICON, NAV_ICONS, NavGlyph } from './navIcons'
+import type { CSSProperties } from 'react'
 import styles from './AppLayout.module.css'
 
 const DASHBOARD_PATH = '/app/dashboard'
@@ -25,6 +28,7 @@ export function AppLayout() {
   const [openMenuIds, setOpenMenuIds] = useState<Record<number, boolean>>({})
   const [openSubIds, setOpenSubIds] = useState<Record<string, boolean>>({})
   const [mobileNavOpen, setMobileNavOpen] = useState(false)
+  const [collapsed, setCollapsed] = useState(false)
 
   const ps = useMemo(() => buildPermissionSet(permissions), [permissions])
 
@@ -117,17 +121,25 @@ export function AppLayout() {
     if (visibleSubs.length === 0) return null
 
     const isOpen = openMenuIds[menu.id] ?? false
+    const accent = TILE_COLORS[menu.color] ?? '#0d9488'
     return (
       <div key={menu.id} className={styles.navGroup}>
         <button
           type="button"
-          className={styles.navGroupBtn}
+          className={`${styles.navGroupBtn} ${isOpen ? styles.groupOpen : ''}`}
+          style={{ '--mc': accent } as CSSProperties}
           onClick={() => toggleMenu(menu.id)}
           aria-expanded={isOpen}
         >
-          <span className={styles.navIcon}>{menu.icon}</span>
+          <span className={styles.navIcon}>
+            <NavGlyph>{NAV_ICONS[menu.id]}</NavGlyph>
+          </span>
           <span className={styles.groupLabel}>{menu.label}</span>
-          <span className={styles.chevron}>{isOpen ? '▾' : '▸'}</span>
+          <span className={`${styles.chevron} ${isOpen ? styles.chevronOpen : ''}`} aria-hidden>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.2} strokeLinecap="round" strokeLinejoin="round">
+              <path d="m6 9 6 6 6-6" />
+            </svg>
+          </span>
         </button>
         {isOpen && (
           <div className={styles.subNav}>
@@ -177,10 +189,12 @@ export function AppLayout() {
   return (
     <div className={styles.shell}>
       <aside
-        className={`${styles.sidebar} ${mobileNavOpen ? styles.sidebarOpen : ''}`}
+        className={`${styles.sidebar} ${mobileNavOpen ? styles.sidebarOpen : ''} ${collapsed ? styles.sidebarCollapsed : ''}`}
       >
         <div className={styles.brand}>
-          <span className={styles.brandMark} aria-hidden />
+          <span className={styles.brandMark} aria-hidden>
+            ＋
+          </span>
           <div>
             <strong>Revin Bill</strong>
             <span className={styles.brandTag}>
@@ -194,9 +208,12 @@ export function AppLayout() {
             to={DASHBOARD_PATH}
             end
             className={`${styles.navLink} ${dashboardActive ? styles.active : ''}`}
+            style={{ '--mc': '#22d3ee' } as CSSProperties}
             onClick={closeMobile}
           >
-            <span className={styles.navIcon}>◆</span>
+            <span className={styles.navIcon}>
+              <NavGlyph>{DASHBOARD_ICON}</NavGlyph>
+            </span>
             <span className={styles.groupLabel}>Dashboard</span>
           </NavLink>
 
@@ -243,6 +260,20 @@ export function AppLayout() {
 
       <div className={styles.mainWrap}>
         <header className={styles.topBar}>
+          <button
+            type="button"
+            className={styles.sidebarToggle}
+            aria-label={collapsed ? 'Show sidebar' : 'Hide sidebar'}
+            aria-pressed={collapsed}
+            title={collapsed ? 'Show sidebar' : 'Hide sidebar'}
+            onClick={() => setCollapsed((v) => !v)}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <path d="M9 4v16" />
+              {collapsed ? <path d="m13 9 3 3-3 3" /> : <path d="m16 9-3 3 3 3" />}
+            </svg>
+          </button>
           <button
             type="button"
             className={styles.menuToggle}

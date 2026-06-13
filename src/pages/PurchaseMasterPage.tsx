@@ -119,7 +119,9 @@ function PurchaseDetailFullscreen({ purchase: initial, onClose }: { purchase: Pu
   const metaFields = [
     { label: 'Invoice No', value: fmt(p.invoice_no) },
     { label: 'Invoice Date', value: fmtDate(p.invoice_date) },
-    { label: 'Entry Date', value: fmtDate(p.entry_date) },
+    ...((p.entry_date || '').slice(0, 10) === (p.invoice_date || '').slice(0, 10)
+      ? []
+      : [{ label: 'Entry Date', value: fmtDate(p.entry_date) }]),
     { label: 'Due Date', value: fmtDate(p.due_date) },
     { label: 'Supplier', value: fmt(p.supplier_name) },
     { label: 'Total Amount', value: fmtAmt(p.total_amount) },

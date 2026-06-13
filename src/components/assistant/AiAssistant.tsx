@@ -13,7 +13,14 @@ const SUGGESTIONS = [
 ]
 
 export function AiAssistant() {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(() => {
+    try {
+      const saved = localStorage.getItem('ai-open')
+      if (saved != null) return saved === '1'
+    } catch { /* ignore */ }
+    // Default: open on desktop, collapsed on small screens.
+    return typeof window !== 'undefined' && window.innerWidth > 900
+  })
   const [messages, setMessages] = useState<Msg[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
@@ -27,6 +34,13 @@ export function AiAssistant() {
     if (!open) return
     void assistantStatus().then((s) => setDocs(s.documents)).catch(() => {})
     setTimeout(() => inputRef.current?.focus(), 150)
+  }, [open])
+
+  // Persist preference and reserve page space when docked open (desktop).
+  useEffect(() => {
+    try { localStorage.setItem('ai-open', open ? '1' : '0') } catch { /* ignore */ }
+    document.body.classList.toggle('ai-docked', open)
+    return () => document.body.classList.remove('ai-docked')
   }, [open])
 
   useEffect(() => {

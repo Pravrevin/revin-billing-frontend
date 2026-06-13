@@ -7,16 +7,24 @@
 .sidebar {
   width: 280px;
   flex-shrink: 0;
-  background: var(--medical-deep);
-  color: #f0fafb;
+  background: #0f1b2d;
+  color: #e7eef5;
   display: flex;
   flex-direction: column;
   padding: 1.5rem 1rem 1rem;
-  box-shadow: 8px 0 32px rgba(8, 61, 74, 0.18);
+  border-right: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: 6px 0 30px rgba(2, 8, 20, 0.4);
   position: sticky;
   top: 0;
   height: 100svh;
   z-index: 20;
+}
+
+/* Desktop: collapse hides the rail and lets content use the full width */
+@media (min-width: 901px) {
+  .sidebarCollapsed {
+    display: none;
+  }
 }
 
 .brand {
@@ -31,14 +39,22 @@
 .brandMark {
   width: 44px;
   height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #5eead4 0%, #22d3ee 50%, #fff 100%);
-  box-shadow: 0 4px 20px rgba(34, 211, 238, 0.35);
+  flex-shrink: 0;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: #0f1b2d;
+  background: #22d3ee;
+  box-shadow: 0 6px 18px rgba(34, 211, 238, 0.4), inset 0 -3px 0 rgba(0, 0, 0, 0.12);
 }
 
 .brand strong {
   display: block;
+  font-family: var(--font-display);
   font-size: 1.15rem;
+  font-weight: 700;
   letter-spacing: -0.02em;
 }
 
@@ -58,6 +74,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding-right: 0.25rem;
+  perspective: 900px;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
 }
@@ -77,12 +94,14 @@
 
 .navLink,
 .navGroupBtn {
+  --mc: #5eead4;
+  position: relative;
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  padding: 0.65rem 0.85rem;
-  border-radius: 10px;
-  color: rgba(240, 250, 251, 0.92);
+  gap: 0.7rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 12px;
+  color: rgba(231, 238, 245, 0.88);
   text-decoration: none;
   font-size: 0.92rem;
   font-weight: 500;
@@ -91,37 +110,114 @@
   width: 100%;
   text-align: left;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.18s ease, color 0.18s ease, box-shadow 0.2s ease;
+}
+
+/* Left accent bar (grows in when active/open) */
+.navLink::before,
+.navGroupBtn::before {
+  content: '';
+  position: absolute;
+  left: -0.7rem;
+  top: 50%;
+  translate: 0 -50%;
+  width: 3px;
+  height: 0;
+  border-radius: 0 4px 4px 0;
+  background: var(--mc);
+  transition: height 0.22s ease;
 }
 
 .navLink:hover,
 .navGroupBtn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  transform: translateX(4px);
 }
 
-.navLink.active {
-  background: rgba(255, 255, 255, 0.18);
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.15);
+.navLink.active,
+.navGroupBtn.groupOpen {
+  background: color-mix(in srgb, var(--mc) 15%, transparent);
+  color: #fff;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mc) 32%, transparent),
+    0 8px 22px color-mix(in srgb, var(--mc) 22%, transparent);
 }
 
+.navLink.active::before,
+.navGroupBtn.groupOpen::before {
+  height: 62%;
+}
+
+/* Colored 3D icon tile */
 .navIcon {
-  font-size: 0.75rem;
-  opacity: 0.9;
-  width: 1.25rem;
-  text-align: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: var(--mc);
+  background: color-mix(in srgb, var(--mc) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--mc) 28%, transparent);
+  box-shadow: 0 2px 0 color-mix(in srgb, var(--mc) 30%, transparent);
+  transition: transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1),
+    background 0.18s ease, color 0.18s ease, box-shadow 0.2s ease;
 }
 
-.navGroupBtn .chevron {
+.navIcon svg {
+  width: 19px;
+  height: 19px;
+}
+
+/* 3D tilt + fill on hover / active */
+.navLink:hover .navIcon,
+.navGroupBtn:hover .navIcon,
+.navLink.active .navIcon,
+.navGroupBtn.groupOpen .navIcon {
+  background: var(--mc);
+  color: #fff;
+  transform: rotateY(-22deg) rotateX(8deg) translateZ(8px);
+  box-shadow: -4px 6px 14px color-mix(in srgb, var(--mc) 45%, transparent);
+}
+
+.chevron {
   margin-left: auto;
-  opacity: 0.7;
-  font-size: 0.7rem;
+  opacity: 0.65;
+  display: grid;
+  place-items: center;
+  transition: transform 0.22s ease, opacity 0.18s ease;
+}
+
+.chevron svg {
+  width: 16px;
+  height: 16px;
+}
+
+.chevronOpen {
+  transform: rotate(180deg);
+  opacity: 1;
 }
 
 .subNav {
   display: flex;
   flex-direction: column;
   gap: 0.15rem;
-  padding: 0.35rem 0 0.5rem 2.25rem;
+  padding: 0.35rem 0 0.5rem 1.4rem;
+  margin-left: 0.95rem;
+  border-left: 1px dashed rgba(255, 255, 255, 0.12);
+  animation: subIn 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes subIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .subLink {
@@ -172,6 +268,9 @@
 .groupLabel {
   flex: 1;
   min-width: 0;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.01em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -183,11 +282,12 @@
 
 .sectionHead {
   margin: 0 0 0.25rem 0.6rem;
-  font-size: 0.66rem;
+  font-family: var(--font-display);
+  font-size: 0.64rem;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: rgba(204, 251, 241, 0.55);
+  color: rgba(204, 251, 241, 0.5);
 }
 
 .subGroup {
@@ -316,6 +416,35 @@
   font-weight: 600;
   cursor: pointer;
   color: var(--text);
+}
+
+.sidebarToggle {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface-0);
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.sidebarToggle:hover {
+  background: var(--accent-soft);
+  border-color: var(--medical-teal);
+  color: var(--medical-deep);
+}
+
+.sidebarToggle svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Hide on mobile — the text "Menu" toggle takes over there */
+@media (max-width: 900px) {
+  .sidebarToggle { display: none; }
 }
 
 .topBarMeta {

@@ -41,6 +41,8 @@ export function PurchaseHistoryModal({ onClose }: { onClose: () => void }) {
   const [status, setStatus] = useState('')
   const [from, setFrom] = useState('')
   const [to, setTo] = useState('')
+  const [entryFrom, setEntryFrom] = useState('')
+  const [entryTo, setEntryTo] = useState('')
 
   const [pay, setPay] = useState<{ supplierId: number; name: string; invoice: PayInvoice } | null>(null)
   const [detail, setDetail] = useState<Purchase | null>(null)
@@ -85,13 +87,16 @@ export function PurchaseHistoryModal({ onClose }: { onClose: () => void }) {
       const d = (r.invoice_date || '').slice(0, 10)
       if (from && d && d < from) return false
       if (to && d && d > to) return false
+      const ed = (r.entry_date || '').slice(0, 10)
+      if (entryFrom && ed && ed < entryFrom) return false
+      if (entryTo && ed && ed > entryTo) return false
       if (q) {
         const hay = `${r.invoice_no ?? ''} ${r.supplier_name ?? ''}`.toLowerCase()
         if (!hay.includes(q)) return false
       }
       return true
     })
-  }, [rows, search, supplierId, status, from, to])
+  }, [rows, search, supplierId, status, from, to, entryFrom, entryTo])
 
   const totals = useMemo(() => ({
     net: filtered.reduce((s, r) => s + num(r.net_amount), 0),
@@ -110,7 +115,7 @@ export function PurchaseHistoryModal({ onClose }: { onClose: () => void }) {
     }
   }
 
-  const hasFilters = search || supplierId || status || from || to
+  const hasFilters = search || supplierId || status || from || to || entryFrom || entryTo
 
   return (
     <div className={styles.overlayFullscreen}>
@@ -145,15 +150,17 @@ export function PurchaseHistoryModal({ onClose }: { onClose: () => void }) {
               <option value="Paid">Paid</option>
             </select>
           </div>
-          <div className={styles.fsFilterField}><label>From</label><input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} /></div>
-          <div className={styles.fsFilterField}><label>To</label><input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} /></div>
+          <div className={styles.fsFilterField}><label>Purchase from</label><input type="date" value={from} max={to || undefined} onChange={(e) => setFrom(e.target.value)} /></div>
+          <div className={styles.fsFilterField}><label>Purchase to</label><input type="date" value={to} min={from || undefined} onChange={(e) => setTo(e.target.value)} /></div>
+          <div className={styles.fsFilterField}><label>Entry from</label><input type="date" value={entryFrom} max={entryTo || undefined} onChange={(e) => setEntryFrom(e.target.value)} /></div>
+          <div className={styles.fsFilterField}><label>Entry to</label><input type="date" value={entryTo} min={entryFrom || undefined} onChange={(e) => setEntryTo(e.target.value)} /></div>
         </div>
         <div className={styles.fsFilterMeta}>
           <span className={styles.chip}>
             <strong>{filtered.length}</strong> bills · net <strong>{money(totals.net)}</strong> · paid <strong>{money(totals.paid)}</strong> · outstanding <strong>{money(totals.out)}</strong>
           </span>
           {hasFilters ? (
-            <button type="button" className={styles.resetLink} onClick={() => { setSearch(''); setSupplierId(''); setStatus(''); setFrom(''); setTo('') }}>Reset</button>
+            <button type="button" className={styles.resetLink} onClick={() => { setSearch(''); setSupplierId(''); setStatus(''); setFrom(''); setTo(''); setEntryFrom(''); setEntryTo('') }}>Reset</button>
           ) : null}
         </div>
       </div>
@@ -168,17 +175,18 @@ export function PurchaseHistoryModal({ onClose }: { onClose: () => void }) {
               <table className={styles.fsTable}>
                 <thead>
                   <tr>
-                    <th>Invoice</th><th>Date</th><th>Supplier</th>
+                    <th>Invoice</th><th>Purchase Date</th><th>Entry Date</th><th>Supplier</th>
                     <th>Net</th><th>Paid</th><th>Outstanding</th><th>Status</th><th aria-label="Actions" />
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.length === 0 ? (
-                    <tr className={styles.emptyRow}><td colSpan={8}>No purchase bills match these filters.</td></tr>
+                    <tr className={styles.emptyRow}><td colSpan={9}>No purchase bills match these filters.</td></tr>
                   ) : filtered.map((r) => (
                     <tr key={r.id}>
                       <td><strong>{r.invoice_no ?? `#${r.id}`}</strong></td>
                       <td>{fmtDate(r.invoice_date)}{r.is_overdue ? <span className={`${styles.badge} ${styles.badgeOff}`} style={{ marginLeft: 6 }}>{r.days_overdue}d</span> : null}</td>
+                      <td>{fmtDate(r.entry_date)}</td>
                       <td>{r.supplier_name ?? '—'}</td>
                       <td className={styles.amtCell}>{money(r.net_amount)}</td>
                       <td className={styles.amtCell}>{money(r.total_paid)}</td>

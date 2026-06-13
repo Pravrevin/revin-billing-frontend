@@ -11,7 +11,6 @@ import { ItemMasterAddPage } from './pages/ItemMasterAddPage'
 import { ItemMasterHistoryPage } from './pages/ItemMasterHistoryPage'
 import { ItemMasterPage } from './pages/ItemMasterPage'
 import { LandingPage } from './pages/LandingPage'
-import { LoginPage } from './pages/LoginPage'
 import { LowStockAlertPage } from './pages/LowStockAlertPage'
 import { ProductMasterPage } from './pages/ProductMasterPage'
 import { PurchaseMasterPage } from './pages/PurchaseMasterPage'
@@ -29,7 +28,7 @@ export default function App() {
     <AuthProvider>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<LandingPage initialAuth="store" />} />
         <Route
           path="/admin"
           element={
